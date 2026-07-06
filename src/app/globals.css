@@ -1,26 +1,62 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-canvas: #fbfaf8;
+  --color-sidebar: #f7f5f2;
+  --color-panel: #ffffff;
+  --color-hairline: #e4e1db;
+  --color-hairline-soft: #eeece7;
+  --color-input-border: #d8d4ce;
+
+  --color-ink: #2c2a27;
+  --color-ink-contrast: #fbfaf8;
+  --color-muted: #9b988f;
+  --color-muted-strong: #6c6960;
+  --color-body: #56544e;
+
+  --color-status-confirmed-bg: #2c2a27;
+  --color-status-confirmed-text: #fbfaf8;
+  --color-status-pending-bg: #efece6;
+  --color-status-pending-text: #6c6960;
+  --color-status-cancelled-bg: #f7e9e6;
+  --color-status-cancelled-text: #b4553f;
+  --color-status-success-bg: #e8f0ea;
+  --color-status-success-text: #4a8a5e;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --color-canvas: var(--color-canvas);
+  --color-sidebar: var(--color-sidebar);
+  --color-panel: var(--color-panel);
+  --color-hairline: var(--color-hairline);
+  --color-hairline-soft: var(--color-hairline-soft);
+  --color-input-border: var(--color-input-border);
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-ink: var(--color-ink);
+  --color-ink-contrast: var(--color-ink-contrast);
+  --color-muted: var(--color-muted);
+  --color-muted-strong: var(--color-muted-strong);
+  --color-body: var(--color-body);
+
+  --color-status-confirmed-bg: var(--color-status-confirmed-bg);
+  --color-status-confirmed-text: var(--color-status-confirmed-text);
+  --color-status-pending-bg: var(--color-status-pending-bg);
+  --color-status-pending-text: var(--color-status-pending-text);
+  --color-status-cancelled-bg: var(--color-status-cancelled-bg);
+  --color-status-cancelled-text: var(--color-status-cancelled-text);
+  --color-status-success-bg: var(--color-status-success-bg);
+  --color-status-success-text: var(--color-status-success-text);
+
+  --font-sans: var(--font-manrope), system-ui, -apple-system, sans-serif;
+  --font-wordmark: var(--font-caveat), cursive;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+::placeholder {
+  color: var(--color-muted);
 }
