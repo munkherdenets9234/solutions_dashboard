@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: digitalbrochure-admin
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: API_BASE_URL
+        value: https://solutions-service.onrender.com/api/v1
+      - key: TENANT_API_KEY
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
+      - key: NODE_ENV
+        value: production
