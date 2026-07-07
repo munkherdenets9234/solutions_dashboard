@@ -23,6 +23,7 @@ function bodyFromForm(formData: FormData) {
     read_time: Number(formData.get('read_time') ?? 0) || undefined,
     featured: formData.get('featured') === 'on',
     excerpt: String(formData.get('excerpt') ?? ''),
+    content: String(formData.get('content') ?? ''),
     tags,
     cover_image: coverImageUrl ? { url: coverImageUrl } : undefined,
   }

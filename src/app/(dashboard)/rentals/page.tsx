@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { listRentals } from '@/lib/data/rentals'
 import { buildCarNameMap } from '@/lib/data/cars'
+import { buildCustomerNameMap } from '@/lib/data/customers'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { shortId } from '@/lib/format'
@@ -10,14 +11,18 @@ export default async function RentalsPage({ searchParams }: { searchParams: Prom
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
 
-  const [{ data, meta }, carNames] = await Promise.all([listRentals(page, 10), buildCarNameMap(100)])
+  const [{ data, meta }, carNames, customerNames] = await Promise.all([
+    listRentals(page, 10),
+    buildCarNameMap(100),
+    buildCustomerNameMap(100),
+  ])
 
   const columns: Column<Rental>[] = [
     {
       header: 'Customer',
       render: (r) => (
-        <Link href={`/rentals/${r.id}`} className="font-mono text-xs font-semibold hover:underline">
-          {shortId(r.customer_id)}
+        <Link href={`/rentals/${r.id}`} className="font-semibold hover:underline">
+          {customerNames[r.customer_id] ?? shortId(r.customer_id)}
         </Link>
       ),
     },

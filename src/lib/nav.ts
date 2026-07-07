@@ -17,6 +17,7 @@ export const NAV_SECTIONS: NavSection[] = [
     heading: 'Manage',
     items: [
       { href: '/tours', label: 'Tours' },
+      { href: '/customers', label: 'Customers' },
       { href: '/bookings', label: 'Bookings' },
       { href: '/rentals', label: 'Rentals' },
       { href: '/airport-transfers', label: 'Airport Transfers' },

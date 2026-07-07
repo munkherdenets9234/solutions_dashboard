@@ -16,3 +16,10 @@ export async function buildDestinationNameMap(limit = 100): Promise<Record<strin
   const { data } = await listDestinations(1, limit)
   return Object.fromEntries(data.map((d) => [d.id, d.name]))
 }
+
+// Same constraint as above, but keeps the full destination record for pages
+// that need more than just the name (region, duration, seasons, etc).
+export async function buildDestinationMap(limit = 100): Promise<Record<string, Destination>> {
+  const { data } = await listDestinations(1, limit)
+  return Object.fromEntries(data.map((d) => [d.id, d]))
+}

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { listAirportTransfers } from '@/lib/data/airport-transfers'
+import { buildCustomerNameMap } from '@/lib/data/customers'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { shortId } from '@/lib/format'
@@ -8,14 +9,14 @@ import type { AirportTransfer } from '@/lib/types'
 export default async function AirportTransfersPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
-  const { data, meta } = await listAirportTransfers(page, 10)
+  const [{ data, meta }, customerNames] = await Promise.all([listAirportTransfers(page, 10), buildCustomerNameMap(100)])
 
   const columns: Column<AirportTransfer>[] = [
     {
       header: 'Customer',
       render: (t) => (
-        <Link href={`/airport-transfers/${t.id}`} className="font-mono text-xs font-semibold hover:underline">
-          {shortId(t.customer_id)}
+        <Link href={`/airport-transfers/${t.id}`} className="font-semibold hover:underline">
+          {customerNames[t.customer_id] ?? shortId(t.customer_id)}
         </Link>
       ),
     },

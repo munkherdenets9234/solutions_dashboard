@@ -1,6 +1,7 @@
 'use server'
 
 import { v2 as cloudinary } from 'cloudinary'
+import { requireToken } from '@/lib/auth/session'
 
 // Reuses the same Cloudinary account (via CLOUDINARY_URL) that already hosts
 // existing destination/car/blog cover images. Credentials stay server-side —
@@ -15,6 +16,8 @@ export interface UploadResult {
 }
 
 export async function uploadImageAction(formData: FormData): Promise<UploadResult> {
+  await requireToken()
+
   if (!process.env.CLOUDINARY_URL) {
     return { error: 'CLOUDINARY_URL is not configured on the server.' }
   }

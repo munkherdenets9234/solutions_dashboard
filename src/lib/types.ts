@@ -3,9 +3,9 @@
 // those show a nested `customer`/`booking`/`rental`/`transfer` body for
 // *creating* a record, but the backend denormalizes on write: it stores the
 // customer separately (only a customer_id reference remains) and flattens
-// the rest onto the top-level document. There is no customers endpoint
-// anywhere in the API, so a booking/rental/transfer's customer is only ever
-// visible as an opaque id here.
+// the rest onto the top-level document. A booking/rental/transfer record
+// itself only ever exposes customer_id — resolving the name/email requires
+// the dedicated /admin/customers endpoints (see Customer/CustomerDetail).
 
 export interface Image {
   url: string
@@ -87,6 +87,7 @@ export interface Blog {
   read_time?: number
   featured?: boolean
   excerpt?: string
+  content?: string
   author?: { name: string; role?: string }
   date?: string
   status: string
@@ -110,4 +111,30 @@ export interface TenantUser {
   email: string
   role: 'admin' | 'staff'
   status: string
+}
+
+interface CustomerBase {
+  id: string
+  name: string
+  email: string
+  phone: string
+  nationality?: string
+  notes?: string
+  created_at?: string
+}
+
+// List view — /admin/customers returns each customer with counts of its
+// related records instead of the records themselves.
+export interface Customer extends CustomerBase {
+  booking_count: number
+  rental_count: number
+  airport_transfer_count: number
+}
+
+// Detail view — /admin/customers/:id expands the full related records
+// instead of counts.
+export interface CustomerDetail extends CustomerBase {
+  bookings: Booking[]
+  rentals: Rental[]
+  airport_transfers: AirportTransfer[]
 }

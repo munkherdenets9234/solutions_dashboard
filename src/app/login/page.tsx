@@ -13,7 +13,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="flex flex-col items-center gap-1 mb-8">
           <div className="w-9 h-9 rounded-[7px] bg-ink" />
-          <div className="mt-2 font-wordmark text-2xl font-bold leading-none">Travel Mongolia</div>
+          <div className="mt-2 font-wordmark text-2xl font-bold leading-none">E&S Travel Mongolia</div>
           <div className="text-[10px] font-semibold tracking-widest uppercase text-muted">Admin</div>
         </div>
 

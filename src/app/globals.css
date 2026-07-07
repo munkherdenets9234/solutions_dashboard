@@ -60,3 +60,44 @@ body {
 ::placeholder {
   color: var(--color-muted);
 }
+
+.tiptap {
+  line-height: 1.6;
+}
+.tiptap p {
+  margin: 0.5em 0;
+}
+.tiptap h2 {
+  font-size: 1.25em;
+  font-weight: 800;
+  margin: 0.8em 0 0.3em;
+}
+.tiptap h3 {
+  font-size: 1.1em;
+  font-weight: 700;
+  margin: 0.7em 0 0.3em;
+}
+.tiptap ul,
+.tiptap ol {
+  padding-left: 1.25em;
+  margin: 0.5em 0;
+}
+.tiptap ul {
+  list-style: disc;
+}
+.tiptap ol {
+  list-style: decimal;
+}
+.tiptap blockquote {
+  border-left: 3px solid var(--color-hairline);
+  padding-left: 0.75em;
+  color: var(--color-body);
+  margin: 0.5em 0;
+}
+.tiptap a {
+  color: var(--color-ink);
+  text-decoration: underline;
+}
+.tiptap:focus {
+  outline: none;
+}

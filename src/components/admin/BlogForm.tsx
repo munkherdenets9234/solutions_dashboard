@@ -5,6 +5,7 @@ import type { Blog } from '@/lib/types'
 import type { FormState } from '@/app/(dashboard)/blog/actions'
 import { inputClass, textareaClass, labelClass, buttonClass, errorClass } from './form'
 import { ImageUploadField } from './ImageUploadField'
+import { RichTextEditor } from './RichTextEditor'
 
 export function BlogForm({
   action,
@@ -73,6 +74,8 @@ export function BlogForm({
         </label>
         <input id="tags" name="tags" defaultValue={defaultValues?.tags?.join(', ')} className={inputClass} />
       </div>
+
+      <RichTextEditor name="content" label="Content" defaultValue={defaultValues?.content} />
 
       <ImageUploadField name="cover_image_url" label="Cover image" defaultValue={defaultValues?.cover_image?.url} />
 

@@ -1,5 +1,7 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getAirportTransfer } from '@/lib/data/airport-transfers'
+import { tryGetCustomer } from '@/lib/data/customers'
 import { updateTransferStatusAction } from '../actions'
 import { StatusActions } from '@/components/admin/StatusActions'
 import { StatusBadge } from '@/components/admin/StatusBadge'
@@ -17,6 +19,8 @@ export default async function AirportTransferDetailPage({ params }: { params: Pr
     throw err
   }
 
+  const customer = await tryGetCustomer(transfer.customer_id)
+
   return (
     <div className="flex flex-col gap-5 max-w-2xl">
       <div className="flex items-start justify-between gap-4">
@@ -29,8 +33,29 @@ export default async function AirportTransferDetailPage({ params }: { params: Pr
 
       <StatusActions status={transfer.status} action={updateTransferStatusAction.bind(null, transfer.id)} />
 
+      <div className="border border-hairline rounded-[10px] bg-panel p-5">
+        <h2 className="text-xs font-semibold text-muted uppercase tracking-wide mb-4">Customer</h2>
+        <div className="grid grid-cols-2 gap-4">
+          {customer ? (
+            <>
+              <Field
+                label="Name"
+                value={
+                  <Link href={`/customers/${customer.id}`} className="font-semibold hover:underline">
+                    {customer.name}
+                  </Link>
+                }
+              />
+              <Field label="Email" value={customer.email} />
+              <Field label="Phone" value={customer.phone || '—'} />
+            </>
+          ) : (
+            <Field label="Customer ID" value={transfer.customer_id} mono full />
+          )}
+        </div>
+      </div>
+
       <div className="border border-hairline rounded-[10px] bg-panel p-5 grid grid-cols-2 gap-4">
-        <Field label="Customer ID" value={transfer.customer_id} mono />
         <Field label="Flight number" value={transfer.flight_number || '—'} />
         <Field label="Passengers" value={String(transfer.passengers)} />
         <Field label="Arrival" value={new Date(transfer.arrival_at).toLocaleString()} />
@@ -38,14 +63,14 @@ export default async function AirportTransferDetailPage({ params }: { params: Pr
         {transfer.notes ? <Field label="Notes" value={transfer.notes} full /> : null}
       </div>
 
-      <p className="text-xs text-muted">
-        The API doesn&apos;t expose the customer&apos;s name or email on this record — only the id above.
-      </p>
+      {!customer ? (
+        <p className="text-xs text-muted">Customer details are unavailable — showing the raw id instead.</p>
+      ) : null}
     </div>
   )
 }
 
-function Field({ label, value, full, mono }: { label: string; value: string; full?: boolean; mono?: boolean }) {
+function Field({ label, value, full, mono }: { label: string; value: React.ReactNode; full?: boolean; mono?: boolean }) {
   return (
     <div className={full ? 'col-span-2' : undefined}>
       <div className="text-[11px] font-semibold text-muted uppercase tracking-wide">{label}</div>

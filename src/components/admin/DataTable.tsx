@@ -12,14 +12,24 @@ export interface DataTableProps<T> {
   getRowKey: (row: T) => string
   meta?: { total: number; page: number; limit: number }
   basePath?: string
+  query?: Record<string, string | undefined>
   emptyMessage?: string
 }
 
-export function DataTable<T>({ columns, rows, getRowKey, meta, basePath, emptyMessage }: DataTableProps<T>) {
+export function DataTable<T>({ columns, rows, getRowKey, meta, basePath, query, emptyMessage }: DataTableProps<T>) {
   const page = meta?.page ?? 1
   const limit = meta?.limit ?? rows.length
   const total = meta?.total ?? rows.length
   const lastPage = limit > 0 ? Math.max(1, Math.ceil(total / limit)) : 1
+
+  const pageHref = (targetPage: number) => {
+    const params = new URLSearchParams()
+    for (const [key, value] of Object.entries(query ?? {})) {
+      if (value) params.set(key, value)
+    }
+    params.set('page', String(targetPage))
+    return `${basePath}?${params.toString()}`
+  }
 
   return (
     <div className="border border-hairline rounded-[10px] bg-panel overflow-hidden">
@@ -66,7 +76,7 @@ export function DataTable<T>({ columns, rows, getRowKey, meta, basePath, emptyMe
             </span>
             <div className="flex gap-1">
               <Link
-                href={`${basePath}?page=${Math.max(1, page - 1)}`}
+                href={pageHref(Math.max(1, page - 1))}
                 aria-disabled={page <= 1}
                 className={`w-7 h-7 border border-input-border rounded-md flex items-center justify-center text-xs ${
                   page <= 1 ? 'pointer-events-none text-input-border' : 'text-body hover:bg-hairline-soft'
@@ -75,7 +85,7 @@ export function DataTable<T>({ columns, rows, getRowKey, meta, basePath, emptyMe
                 ‹
               </Link>
               <Link
-                href={`${basePath}?page=${Math.min(lastPage, page + 1)}`}
+                href={pageHref(Math.min(lastPage, page + 1))}
                 aria-disabled={page >= lastPage}
                 className={`w-7 h-7 border border-input-border rounded-md flex items-center justify-center text-xs ${
                   page >= lastPage ? 'pointer-events-none text-input-border' : 'text-body hover:bg-hairline-soft'

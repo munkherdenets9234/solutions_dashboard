@@ -18,7 +18,7 @@ export function Sidebar({ email }: { email: string }) {
       <div className="flex items-center gap-2.5 px-4 py-[18px] border-b border-hairline">
         <div className="w-7 h-7 rounded-[7px] bg-ink shrink-0" />
         <div className="min-w-0">
-          <div className="font-wordmark font-bold text-[19px] leading-none">Travel Mongolia</div>
+          <div className="font-wordmark font-bold text-[19px] leading-none">E&S Tour Mongolia</div>
           <div className="text-[10px] font-medium text-muted tracking-widest uppercase mt-0.5">Admin</div>
         </div>
       </div>
