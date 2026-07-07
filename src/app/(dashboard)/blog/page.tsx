@@ -2,13 +2,17 @@ import Link from 'next/link'
 import { listPublishedBlogs } from '@/lib/data/blogs'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
+import { ErrorNotice } from '@/components/admin/ErrorNotice'
 import { buttonClass } from '@/components/admin/form'
+import { safeLoad } from '@/lib/api/safe'
 import type { Blog } from '@/lib/types'
 
 export default async function BlogPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
-  const { data, meta } = await listPublishedBlogs(page, 10)
+  const result = await safeLoad(() => listPublishedBlogs(page, 10))
+  if (!result.ok) return <ErrorNotice message={result.message} />
+  const { data, meta } = result.data
 
   const columns: Column<Blog>[] = [
     { header: 'Title', render: (b) => <span className="font-semibold">{b.title}</span> },
@@ -19,7 +23,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
       header: '',
       align: 'right',
       render: (b) => (
-        <Link href={`/blog/${b.slug}/edit`} className="text-xs font-semibold text-body hover:underline">
+        <Link href={`/blog/${b.id}/edit`} className="text-xs font-semibold text-body hover:underline">
           Edit
         </Link>
       ),

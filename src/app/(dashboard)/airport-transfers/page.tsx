@@ -3,13 +3,17 @@ import { listAirportTransfers } from '@/lib/data/airport-transfers'
 import { buildCustomerNameMap } from '@/lib/data/customers'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
+import { ErrorNotice } from '@/components/admin/ErrorNotice'
+import { safeLoad } from '@/lib/api/safe'
 import { shortId } from '@/lib/format'
 import type { AirportTransfer } from '@/lib/types'
 
 export default async function AirportTransfersPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
-  const [{ data, meta }, customerNames] = await Promise.all([listAirportTransfers(page, 10), buildCustomerNameMap(100)])
+  const result = await safeLoad(() => Promise.all([listAirportTransfers(page, 10), buildCustomerNameMap(100)]))
+  if (!result.ok) return <ErrorNotice message={result.message} />
+  const [{ data, meta }, customerNames] = result.data
 
   const columns: Column<AirportTransfer>[] = [
     {

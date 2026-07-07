@@ -1,13 +1,17 @@
 import Link from 'next/link'
 import { listCars } from '@/lib/data/cars'
 import { DataTable, type Column } from '@/components/admin/DataTable'
+import { ErrorNotice } from '@/components/admin/ErrorNotice'
 import { buttonClass } from '@/components/admin/form'
+import { safeLoad } from '@/lib/api/safe'
 import type { Car } from '@/lib/types'
 
 export default async function CarsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
-  const { data, meta } = await listCars(page, 10)
+  const result = await safeLoad(() => listCars(page, 10))
+  if (!result.ok) return <ErrorNotice message={result.message} />
+  const { data, meta } = result.data
 
   const columns: Column<Car>[] = [
     { header: 'Name', render: (c) => <span className="font-semibold">{c.name}</span> },

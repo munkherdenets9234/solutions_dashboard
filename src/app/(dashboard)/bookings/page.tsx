@@ -4,7 +4,9 @@ import { buildDestinationNameMap } from '@/lib/data/destinations'
 import { buildCustomerNameMap } from '@/lib/data/customers'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
+import { ErrorNotice } from '@/components/admin/ErrorNotice'
 import { inputClass, buttonClass, secondaryButtonClass } from '@/components/admin/form'
+import { safeLoad } from '@/lib/api/safe'
 import { shortId } from '@/lib/format'
 import type { Booking } from '@/lib/types'
 
@@ -40,32 +42,36 @@ export default async function BookingsPage({
   const q = qParam?.trim() ?? ''
   const page = Math.max(1, Number(pageParam) || 1)
 
-  const [destinationNames, customerNames] = await Promise.all([buildDestinationNameMap(100), buildCustomerNameMap(100)])
+  const result = await safeLoad(async () => {
+    const [destinationNames, customerNames] = await Promise.all([buildDestinationNameMap(100), buildCustomerNameMap(100)])
 
-  let data: Booking[]
-  let meta: { total: number; page: number; limit: number } | undefined
+    if (q) {
+      const allBookings = await fetchAllBookingsForSearch()
+      const needle = q.toLowerCase()
+      const filtered = allBookings.filter((b) => {
+        const tourName = destinationNames[b.destination_id] ?? b.destination_id
+        const customerName = customerNames[b.customer_id] ?? ''
+        return (
+          shortId(b.id).toLowerCase().includes(needle) ||
+          b.id.toLowerCase().includes(needle) ||
+          tourName.toLowerCase().includes(needle) ||
+          customerName.toLowerCase().includes(needle) ||
+          b.status.toLowerCase().includes(needle)
+        )
+      })
+      return {
+        data: filtered.slice((page - 1) * LIMIT, page * LIMIT),
+        meta: { total: filtered.length, page, limit: LIMIT },
+        destinationNames,
+        customerNames,
+      }
+    }
 
-  if (q) {
-    const allBookings = await fetchAllBookingsForSearch()
-    const needle = q.toLowerCase()
-    const filtered = allBookings.filter((b) => {
-      const tourName = destinationNames[b.destination_id] ?? b.destination_id
-      const customerName = customerNames[b.customer_id] ?? ''
-      return (
-        shortId(b.id).toLowerCase().includes(needle) ||
-        b.id.toLowerCase().includes(needle) ||
-        tourName.toLowerCase().includes(needle) ||
-        customerName.toLowerCase().includes(needle) ||
-        b.status.toLowerCase().includes(needle)
-      )
-    })
-    meta = { total: filtered.length, page, limit: LIMIT }
-    data = filtered.slice((page - 1) * LIMIT, page * LIMIT)
-  } else {
-    const result = await listBookings(page, LIMIT)
-    data = result.data
-    meta = result.meta
-  }
+    const bookings = await listBookings(page, LIMIT)
+    return { data: bookings.data, meta: bookings.meta, destinationNames, customerNames }
+  })
+  if (!result.ok) return <ErrorNotice message={result.message} />
+  const { data, meta, destinationNames, customerNames } = result.data
 
   const columns: Column<Booking>[] = [
     {

@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getBlogBySlug } from '@/lib/data/blogs'
+import { getBlogById } from '@/lib/data/blogs'
 import { updateBlogAction, publishBlogAction } from '../../actions'
 import { BlogForm } from '@/components/admin/BlogForm'
 import { buttonClass } from '@/components/admin/form'
@@ -10,35 +10,18 @@ export default async function EditBlogPage({
   params,
   searchParams,
 }: {
-  params: Promise<{ slug: string }>
-  searchParams: Promise<{ id?: string; justCreated?: string }>
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ justCreated?: string }>
 }) {
-  const { slug } = await params
-  const { id: idParam, justCreated } = await searchParams
+  const { id } = await params
+  const { justCreated } = await searchParams
 
   let blog
   try {
-    blog = (await getBlogBySlug(slug)).data
+    blog = (await getBlogById(id)).data
   } catch (err) {
-    if (err instanceof ApiError && err.status === 404) {
-      // Draft posts may not be reachable by slug until published — if we
-      // still have the id from the create redirect, offer a publish-only view.
-      if (idParam) {
-        return (
-          <div className="flex flex-col gap-4 max-w-2xl">
-            <h1 className="text-[26px] font-extrabold tracking-tight">Draft created</h1>
-            <p className="text-[13px] text-body">
-              This post was just created as a draft and isn&apos;t fetchable by slug until it&apos;s published.
-              Publish it now, then it will show up in the Blog list for further edits.
-            </p>
-            <form action={publishBlogAction.bind(null, idParam)}>
-              <button type="submit" className={buttonClass}>
-                Publish now
-              </button>
-            </form>
-          </div>
-        )
-      }
+    console.error("$:/err ", err)
+    if (err instanceof ApiError && (err.status === 404)) {
       notFound()
     }
     throw err

@@ -4,6 +4,8 @@ import { listContactMessages } from '@/lib/data/contact-messages'
 import { StatTile } from '@/components/admin/StatTile'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
+import { ErrorNotice } from '@/components/admin/ErrorNotice'
+import { safeLoad } from '@/lib/api/safe'
 import { shortId } from '@/lib/format'
 import type { Booking } from '@/lib/types'
 
@@ -19,13 +21,17 @@ export default async function DashboardPage({
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
 
-  const [bookingsPage, sampleBookings, destinationsMeta, destinationNames, contactSample] = await Promise.all([
-    listBookings(page, 10),
-    listBookings(1, 100),
-    listDestinations(1, 1),
-    buildDestinationNameMap(100),
-    listContactMessages(1, 100),
-  ])
+  const result = await safeLoad(() =>
+    Promise.all([
+      listBookings(page, 10),
+      listBookings(1, 100),
+      listDestinations(1, 1),
+      buildDestinationNameMap(100),
+      listContactMessages(1, 100),
+    ])
+  )
+  if (!result.ok) return <ErrorNotice message={result.message} />
+  const [bookingsPage, sampleBookings, destinationsMeta, destinationNames, contactSample] = result.data
 
   const totalBookings = bookingsPage.meta?.total ?? sampleBookings.data.length
   const revenue = sampleBookings.data.reduce((sum, b) => sum + (b.total_price_usd ?? 0), 0)

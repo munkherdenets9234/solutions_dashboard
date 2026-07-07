@@ -4,6 +4,8 @@ import { buildCarNameMap } from '@/lib/data/cars'
 import { buildCustomerNameMap } from '@/lib/data/customers'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
+import { ErrorNotice } from '@/components/admin/ErrorNotice'
+import { safeLoad } from '@/lib/api/safe'
 import { shortId } from '@/lib/format'
 import type { Rental } from '@/lib/types'
 
@@ -11,11 +13,11 @@ export default async function RentalsPage({ searchParams }: { searchParams: Prom
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
 
-  const [{ data, meta }, carNames, customerNames] = await Promise.all([
-    listRentals(page, 10),
-    buildCarNameMap(100),
-    buildCustomerNameMap(100),
-  ])
+  const result = await safeLoad(() =>
+    Promise.all([listRentals(page, 10), buildCarNameMap(100), buildCustomerNameMap(100)])
+  )
+  if (!result.ok) return <ErrorNotice message={result.message} />
+  const [{ data, meta }, carNames, customerNames] = result.data
 
   const columns: Column<Rental>[] = [
     {

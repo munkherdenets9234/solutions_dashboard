@@ -3,6 +3,8 @@ import { updateContactMessageStatusAction } from './actions'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { StatusActions } from '@/components/admin/StatusActions'
+import { ErrorNotice } from '@/components/admin/ErrorNotice'
+import { safeLoad } from '@/lib/api/safe'
 import type { ContactMessage } from '@/lib/types'
 
 const CONTACT_FLOW: Record<string, string[]> = {
@@ -14,7 +16,9 @@ const CONTACT_FLOW: Record<string, string[]> = {
 export default async function ContactMessagesPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
-  const { data, meta } = await listContactMessages(page, 10)
+  const result = await safeLoad(() => listContactMessages(page, 10))
+  if (!result.ok) return <ErrorNotice message={result.message} />
+  const { data, meta } = result.data
 
   const columns: Column<ContactMessage>[] = [
     {

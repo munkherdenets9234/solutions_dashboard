@@ -43,10 +43,7 @@ export async function createBlogAction(_prevState: FormState, formData: FormData
   }
 
   revalidatePath('/blog')
-  // Posts are always created as drafts, and there's no admin list endpoint
-  // that includes drafts — carry the id through so the edit page can still
-  // publish it even if a lookup-by-slug 404s before it's published.
-  redirect(`/blog/${created.slug}/edit?id=${created.id}&justCreated=1`)
+  redirect(`/blog/${created.id}/edit?justCreated=1`)
 }
 
 export async function updateBlogAction(id: string, _prevState: FormState, formData: FormData): Promise<FormState> {

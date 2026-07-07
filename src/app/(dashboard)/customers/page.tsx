@@ -1,8 +1,10 @@
 import Link from 'next/link'
 import { listCustomers } from '@/lib/data/customers'
 import { DataTable, type Column } from '@/components/admin/DataTable'
+import { ErrorNotice } from '@/components/admin/ErrorNotice'
 import { inputClass, buttonClass, secondaryButtonClass } from '@/components/admin/form'
 import { ApiError } from '@/lib/api/client'
+import { apiErrorMessage } from '@/lib/api/safe'
 import type { Customer } from '@/lib/types'
 
 const LIMIT = 10
@@ -66,7 +68,7 @@ export default async function CustomersPage({
         </div>
       )
     }
-    throw err
+    return <ErrorNotice message={apiErrorMessage(err)} />
   }
 
   const columns: Column<Customer>[] = [

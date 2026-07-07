@@ -5,6 +5,8 @@ import { StatusBadge } from '@/components/admin/StatusBadge'
 import { StatusActions } from '@/components/admin/StatusActions'
 import { ResetPasswordButton } from '@/components/admin/ResetPasswordButton'
 import { CreateStaffForm } from '@/components/admin/CreateStaffForm'
+import { ErrorNotice } from '@/components/admin/ErrorNotice'
+import { safeLoad } from '@/lib/api/safe'
 import type { TenantUser } from '@/lib/types'
 
 const STAFF_FLOW: Record<string, string[]> = {
@@ -15,7 +17,9 @@ const STAFF_FLOW: Record<string, string[]> = {
 export default async function StaffPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page: pageParam } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
-  const { data, meta } = await listTenantUsers(page, 20)
+  const result = await safeLoad(() => listTenantUsers(page, 20))
+  if (!result.ok) return <ErrorNotice message={result.message} />
+  const { data, meta } = result.data
 
   const columns: Column<TenantUser>[] = [
     { header: 'Name', render: (u) => <span className="font-semibold">{u.name}</span> },
