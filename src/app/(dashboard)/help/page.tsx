@@ -107,6 +107,30 @@ const GUIDE: GuideSection[] = [
         note: "A new post starts as a draft and won't appear on the website, or in this list, until you click Publish.",
       },
       {
+        name: 'Partners',
+        path: '/partners',
+        purpose: 'Partner businesses (accommodation, dining, etc.) shown on the website.',
+        actions: [
+          'Add a new partner, or edit an existing one.',
+          'Set the name, tag, title, description, and website URL.',
+          'Upload a partner image, and an image for each product/offering listed under them.',
+          'Pick a featured review to highlight on the partner\'s page.',
+          'Deactivate a partner from its edit page when they are no longer featured.',
+        ],
+        note: 'Deactivating a partner hides it from the website but keeps the record — it is not permanently deleted.',
+      },
+      {
+        name: 'Reviews',
+        path: '/reviews',
+        purpose: 'Customer reviews shown on the website.',
+        actions: [
+          'Add a new review, or edit an existing one.',
+          'Set the star rating (1–5) and the review text.',
+          'Optionally link the review to a customer, tour, and/or partner using the dropdowns.',
+        ],
+        note: 'Deleting a review from its edit page removes it permanently.',
+      },
+      {
         name: 'Contact Messages',
         path: '/contact-messages',
         purpose: "Messages submitted through the website's contact form.",

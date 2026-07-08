@@ -23,6 +23,8 @@ export const NAV_SECTIONS: NavSection[] = [
       { href: '/airport-transfers', label: 'Airport Transfers' },
       { href: '/cars', label: 'Cars' },
       { href: '/blog', label: 'Blog' },
+      { href: '/partners', label: 'Partners' },
+      { href: '/reviews', label: 'Reviews' },
       { href: '/contact-messages', label: 'Contact Messages' },
     ],
   },

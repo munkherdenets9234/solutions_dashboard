@@ -58,7 +58,7 @@ export function ImageUploadField({
             placeholder="or paste an image URL"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className={`${inputClass} text-xs`}
+            className={`${inputClass} text-xs hidden`}
           />
         </div>
       </div>

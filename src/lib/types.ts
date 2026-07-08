@@ -95,6 +95,38 @@ export interface Blog {
   cover_image?: Image
 }
 
+export interface PartnerProduct {
+  name: string
+  image?: string
+  description?: string
+}
+
+export interface Partner {
+  id: string
+  name: string
+  slug: string
+  tag?: string
+  title?: string
+  description?: string
+  // Plain URL string, unlike the { url, caption } Image object other resources use.
+  image?: string
+  web_url?: string
+  products?: PartnerProduct[]
+  related_review?: string
+  is_active?: boolean
+  created_at?: string
+}
+
+export interface Review {
+  id: string
+  star: number
+  review: string
+  related_customer?: string
+  related_tour?: string
+  related_partner?: string
+  created_at?: string
+}
+
 export interface ContactMessage {
   id: string
   name: string
