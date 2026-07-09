@@ -5,6 +5,11 @@ import type { Destination } from '@/lib/types'
 import type { FormState } from '@/app/(dashboard)/tours/actions'
 import { inputClass, textareaClass, labelClass, buttonClass, errorClass } from './form'
 import { ImageUploadField } from './ImageUploadField'
+import { GalleryUploadField, type GalleryImageInput } from './GalleryUploadField'
+import { DeparturesEditor, type DepartureInput } from './DeparturesEditor'
+import { ItineraryEditor, type ItineraryDayInput } from './ItineraryEditor'
+import { PricesEditor, type PriceInput } from './PricesEditor'
+import { RichTextEditor } from './RichTextEditor'
 
 export function DestinationForm({
   action,
@@ -18,6 +23,32 @@ export function DestinationForm({
   isEdit?: boolean
 }) {
   const [state, formAction, pending] = useActionState(action, {})
+
+  const departureDefaults: DepartureInput[] = (defaultValues?.departures ?? []).map((d) => ({
+    start_date: d.start_date ? d.start_date.slice(0, 10) : '',
+    end_date: d.end_date ? d.end_date.slice(0, 10) : '',
+    available: d.available,
+  }))
+
+  const itineraryDefaults: ItineraryDayInput[] = (defaultValues?.itinerary ?? []).map((d) => ({
+    day: d.day,
+    title: d.title,
+    description: d.description ?? '',
+    activities: (d.activities ?? []).join(', '),
+    overnight: d.overnight ?? '',
+    meals: (d.meals ?? []).join(', '),
+  }))
+
+  const priceDefaults: PriceInput[] = (defaultValues?.prices ?? []).map((p) => ({
+    min_people: String(p.min_people),
+    max_people: String(p.max_people),
+    price_usd: String(p.price_usd),
+  }))
+
+  const galleryDefaults: GalleryImageInput[] = (defaultValues?.images ?? []).map((img) => ({
+    url: img.url,
+    caption: img.caption ?? '',
+  }))
 
   return (
     <form action={formAction} className="flex flex-col gap-4 max-w-2xl">
@@ -54,12 +85,7 @@ export function DestinationForm({
         </div>
       ) : null}
 
-      <div className="flex flex-col gap-1.5">
-        <label className={labelClass} htmlFor="overview">
-          Overview
-        </label>
-        <textarea id="overview" name="overview" rows={3} defaultValue={defaultValues?.overview} className={textareaClass} />
-      </div>
+      <RichTextEditor name="overview" label="Overview" defaultValue={defaultValues?.overview} />
 
       <div className="flex flex-col gap-1.5 max-w-[200px]">
         <label className={labelClass} htmlFor="duration_days">
@@ -75,7 +101,11 @@ export function DestinationForm({
         />
       </div>
 
+      <PricesEditor name="prices_json" defaultValue={priceDefaults} />
+
       <ImageUploadField name="cover_image_url" label="Cover image" defaultValue={defaultValues?.cover_image?.url} />
+
+      <GalleryUploadField name="images_json" label="Gallery images" defaultValue={galleryDefaults} />
 
       <div className="grid grid-cols-3 gap-4">
         <div className="flex flex-col gap-1.5">
@@ -107,6 +137,104 @@ export function DestinationForm({
           />
         </div>
       </div>
+
+      <div className="grid grid-cols-3 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass} htmlFor="accommodation">
+            Accommodation
+          </label>
+          <input
+            id="accommodation"
+            name="accommodation"
+            placeholder="4-star hotel + ger camps"
+            defaultValue={defaultValues?.accommodation}
+            className={inputClass}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass} htmlFor="meal_plan">
+            Meal plan
+          </label>
+          <input
+            id="meal_plan"
+            name="meal_plan"
+            placeholder="All meals included"
+            defaultValue={defaultValues?.meal_plan}
+            className={inputClass}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass} htmlFor="difficulty">
+            Difficulty
+          </label>
+          <select
+            id="difficulty"
+            name="difficulty"
+            defaultValue={defaultValues?.difficulty ?? ''}
+            className={inputClass}
+          >
+            <option value="">—</option>
+            <option value="easy">Easy</option>
+            <option value="moderate">Moderate</option>
+            <option value="challenging">Challenging</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass} htmlFor="highlights">
+            Highlights (one per line)
+          </label>
+          <textarea
+            id="highlights"
+            name="highlights"
+            rows={4}
+            defaultValue={defaultValues?.highlights?.join('\n')}
+            className={textareaClass}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass} htmlFor="activities">
+            Activities (one per line)
+          </label>
+          <textarea
+            id="activities"
+            name="activities"
+            rows={4}
+            defaultValue={defaultValues?.activities?.join('\n')}
+            className={textareaClass}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass} htmlFor="inclusions">
+            Inclusions (one per line)
+          </label>
+          <textarea
+            id="inclusions"
+            name="inclusions"
+            rows={4}
+            defaultValue={defaultValues?.inclusions?.join('\n')}
+            className={textareaClass}
+          />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className={labelClass} htmlFor="exclusions">
+            Exclusions (one per line)
+          </label>
+          <textarea
+            id="exclusions"
+            name="exclusions"
+            rows={4}
+            defaultValue={defaultValues?.exclusions?.join('\n')}
+            className={textareaClass}
+          />
+        </div>
+      </div>
+
+      <DeparturesEditor name="departures_json" defaultValue={departureDefaults} />
+
+      <ItineraryEditor name="itinerary_json" defaultValue={itineraryDefaults} />
 
       <div className="flex items-center gap-6">
         <label className="flex items-center gap-2 text-sm font-medium text-body">

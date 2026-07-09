@@ -12,6 +12,21 @@ export interface Image {
   caption?: string
 }
 
+export interface Departure {
+  start_date: string
+  end_date: string
+  available: boolean
+}
+
+export interface ItineraryDay {
+  day: number
+  title: string
+  description?: string
+  activities?: string[]
+  overnight?: string
+  meals?: string[]
+}
+
 export interface Destination {
   id: string
   name: string
@@ -20,11 +35,21 @@ export interface Destination {
   region?: string
   duration_days?: number
   best_seasons?: string[]
+  departures?: Departure[]
+  highlights?: string[]
+  activities?: string[]
+  inclusions?: string[]
+  exclusions?: string[]
+  itinerary?: ItineraryDay[]
+  accommodation?: string
+  meal_plan?: string
+  difficulty?: string
   categories?: string[]
   tags?: string[]
   featured?: boolean
   is_active?: boolean
   cover_image?: Image
+  images?: Image[]
   prices?: { min_people: number; max_people: number; price_usd: number }[]
 }
 
