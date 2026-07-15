@@ -4,8 +4,9 @@ import { useActionState } from 'react'
 import type { Review } from '@/lib/types'
 import type { FormState } from '@/app/(dashboard)/reviews/actions'
 import type { RefOption } from '@/lib/data/reviews'
-import { inputClass, textareaClass, labelClass, buttonClass, errorClass } from './form'
+import { inputClass, labelClass, buttonClass, errorClass } from './form'
 import { RefSelect } from './RefSelect'
+import { MultiLangField } from './MultiLangField'
 
 export function ReviewForm({
   action,
@@ -42,12 +43,7 @@ export function ReviewForm({
         />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label className={labelClass} htmlFor="review">
-          Review
-        </label>
-        <textarea id="review" name="review" rows={4} required defaultValue={defaultValues?.review} className={textareaClass} />
-      </div>
+      <MultiLangField name="review" label="Review" multiline rows={4} defaultValue={defaultValues?.review} />
 
       <div className="grid grid-cols-3 gap-4">
         <RefSelect

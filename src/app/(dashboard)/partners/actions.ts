@@ -4,10 +4,25 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { apiPost, apiPut, apiDelete, ApiError } from '@/lib/api/client'
 import { requireToken } from '@/lib/auth/session'
-import type { Partner } from '@/lib/types'
+import type { Partner, LocaleMap } from '@/lib/types'
 
 export interface FormState {
   error?: string
+}
+
+function jsonField<T>(formData: FormData, name: string): T | undefined {
+  const raw = String(formData.get(name) ?? '').trim()
+  if (!raw) return undefined
+  try {
+    return JSON.parse(raw) as T
+  } catch {
+    return undefined
+  }
+}
+
+// Reads a MultiLangField's serialized `Record<Locale,string>` hidden input.
+function localeField(formData: FormData, name: string): LocaleMap {
+  return jsonField<LocaleMap>(formData, name) ?? {}
 }
 
 function bodyFromForm(formData: FormData) {
@@ -31,8 +46,8 @@ function bodyFromForm(formData: FormData) {
   return {
     name: String(formData.get('name') ?? ''),
     tag: String(formData.get('tag') ?? ''),
-    title: String(formData.get('title') ?? ''),
-    description: String(formData.get('description') ?? ''),
+    title: localeField(formData, 'title'),
+    description: localeField(formData, 'description'),
     image: image || undefined,
     web_url: webUrl || undefined,
     products,

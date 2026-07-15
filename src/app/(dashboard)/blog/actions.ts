@@ -4,10 +4,25 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { apiPost, apiPut, ApiError } from '@/lib/api/client'
 import { requireToken } from '@/lib/auth/session'
-import type { Blog } from '@/lib/types'
+import type { Blog, LocaleMap } from '@/lib/types'
 
 export interface FormState {
   error?: string
+}
+
+function jsonField<T>(formData: FormData, name: string): T | undefined {
+  const raw = String(formData.get(name) ?? '').trim()
+  if (!raw) return undefined
+  try {
+    return JSON.parse(raw) as T
+  } catch {
+    return undefined
+  }
+}
+
+// Reads a MultiLangField/MultiLangRichTextEditor's serialized `Record<Locale,string>`.
+function localeField(formData: FormData, name: string): LocaleMap {
+  return jsonField<LocaleMap>(formData, name) ?? {}
 }
 
 function bodyFromForm(formData: FormData) {
@@ -18,12 +33,12 @@ function bodyFromForm(formData: FormData) {
   const coverImageUrl = String(formData.get('cover_image_url') ?? '').trim()
 
   return {
-    title: String(formData.get('title') ?? ''),
+    title: localeField(formData, 'title'),
     category: String(formData.get('category') ?? ''),
     read_time: Number(formData.get('read_time') ?? 0) || undefined,
     featured: formData.get('featured') === 'on',
-    excerpt: String(formData.get('excerpt') ?? ''),
-    content: String(formData.get('content') ?? ''),
+    excerpt: localeField(formData, 'excerpt'),
+    content: localeField(formData, 'content'),
     tags,
     cover_image: coverImageUrl ? { url: coverImageUrl } : undefined,
   }

@@ -1,15 +1,17 @@
 'use client'
 
 import { useState } from 'react'
-import { inputClass, textareaClass, labelClass, secondaryButtonClass } from './form'
+import { LOCALES, type LocaleMap, type LocaleListMap } from '@/lib/types'
+import { inputClass, labelClass, secondaryButtonClass } from './form'
+import { MultiLangFieldBase } from './MultiLangField'
 
 export interface ItineraryDayInput {
   day: number
-  title: string
-  description: string
-  activities: string
-  overnight: string
-  meals: string
+  title: LocaleMap
+  description: LocaleMap
+  activities: LocaleMap // comma-separated text per locale, split into a list per locale at submit
+  overnight: LocaleMap
+  meals: LocaleMap // comma-separated text per locale
 }
 
 function splitList(value: string): string[] {
@@ -19,6 +21,15 @@ function splitList(value: string): string[] {
     .filter(Boolean)
 }
 
+function splitLocaleList(value: LocaleMap): LocaleListMap {
+  const out: LocaleListMap = {}
+  for (const locale of LOCALES) {
+    const v = value[locale]
+    if (v) out[locale] = splitList(v)
+  }
+  return out
+}
+
 export function ItineraryEditor({ name, defaultValue }: { name: string; defaultValue?: ItineraryDayInput[] }) {
   const [rows, setRows] = useState<ItineraryDayInput[]>(defaultValue ?? [])
 
@@ -26,7 +37,7 @@ export function ItineraryEditor({ name, defaultValue }: { name: string; defaultV
     setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, ...patch } : r)))
   }
   function addRow() {
-    setRows((prev) => [...prev, { day: prev.length + 1, title: '', description: '', activities: '', overnight: '', meals: '' }])
+    setRows((prev) => [...prev, { day: prev.length + 1, title: {}, description: {}, activities: {}, overnight: {}, meals: {} }])
   }
   function removeRow(i: number) {
     setRows((prev) => prev.filter((_, idx) => idx !== i))
@@ -36,9 +47,9 @@ export function ItineraryEditor({ name, defaultValue }: { name: string; defaultV
     day: r.day,
     title: r.title,
     description: r.description,
-    activities: splitList(r.activities),
+    activities: splitLocaleList(r.activities),
     overnight: r.overnight,
-    meals: splitList(r.meals),
+    meals: splitLocaleList(r.meals),
   }))
 
   return (
@@ -49,7 +60,7 @@ export function ItineraryEditor({ name, defaultValue }: { name: string; defaultV
           + Add day
         </button>
       </div>
-      <input type="hidden" name={name} value={JSON.stringify(serialized)} />
+      <input type="hidden" name={name} value={JSON.stringify(serialized)} readOnly />
       {rows.length === 0 ? <p className="text-xs text-muted">No itinerary days added.</p> : null}
       <div className="flex flex-col gap-3">
         {rows.map((row, i) => (
@@ -69,38 +80,39 @@ export function ItineraryEditor({ name, defaultValue }: { name: string; defaultV
                 Remove
               </button>
             </div>
-            <input
+            <MultiLangFieldBase
+              label="Title"
+              values={row.title}
+              onChange={(v) => update(i, { title: v })}
               placeholder="Title"
-              value={row.title}
-              onChange={(e) => update(i, { title: e.target.value })}
-              className={inputClass}
             />
-            <textarea
-              placeholder="Description"
+            <MultiLangFieldBase
+              label="Description"
+              values={row.description}
+              onChange={(v) => update(i, { description: v })}
+              multiline
               rows={2}
-              value={row.description}
-              onChange={(e) => update(i, { description: e.target.value })}
-              className={textareaClass}
+              placeholder="Description"
             />
             <div className="grid grid-cols-2 gap-2">
-              <input
-                placeholder="Activities (comma-separated)"
-                value={row.activities}
-                onChange={(e) => update(i, { activities: e.target.value })}
-                className={inputClass}
+              <MultiLangFieldBase
+                label="Activities (comma-separated)"
+                values={row.activities}
+                onChange={(v) => update(i, { activities: v })}
+                placeholder="Hiking, Wildlife spotting"
               />
-              <input
-                placeholder="Overnight (e.g. Ger Camp)"
-                value={row.overnight}
-                onChange={(e) => update(i, { overnight: e.target.value })}
-                className={inputClass}
+              <MultiLangFieldBase
+                label="Overnight"
+                values={row.overnight}
+                onChange={(v) => update(i, { overnight: v })}
+                placeholder="Ger Camp"
               />
             </div>
-            <input
-              placeholder="Meals (comma-separated, e.g. breakfast, lunch)"
-              value={row.meals}
-              onChange={(e) => update(i, { meals: e.target.value })}
-              className={inputClass}
+            <MultiLangFieldBase
+              label="Meals (comma-separated)"
+              values={row.meals}
+              onChange={(v) => update(i, { meals: v })}
+              placeholder="breakfast, lunch, dinner"
             />
           </div>
         ))}

@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { apiPost, apiPut, apiDelete, ApiError } from '@/lib/api/client'
 import { requireToken } from '@/lib/auth/session'
-import type { Destination, Departure, ItineraryDay, Image } from '@/lib/types'
+import type { Destination, Departure, ItineraryDay, Image, LocaleMap, LocaleListMap } from '@/lib/types'
 
 export interface FormState {
   error?: string
@@ -13,13 +13,6 @@ export interface FormState {
 function listField(formData: FormData, name: string): string[] {
   return String(formData.get(name) ?? '')
     .split(',')
-    .map((s) => s.trim())
-    .filter(Boolean)
-}
-
-function listFieldLines(formData: FormData, name: string): string[] {
-  return String(formData.get(name) ?? '')
-    .split('\n')
     .map((s) => s.trim())
     .filter(Boolean)
 }
@@ -34,11 +27,28 @@ function jsonField<T>(formData: FormData, name: string): T | undefined {
   }
 }
 
+// Reads a MultiLangField's serialized `Record<Locale,string>` hidden input.
+function localeField(formData: FormData, name: string): LocaleMap {
+  return jsonField<LocaleMap>(formData, name) ?? {}
+}
+
+// Like localeField, but each locale's text block is split into a list
+// (newline-delimited) — for Highlights/Activities/Inclusions/Exclusions.
+function localeListField(formData: FormData, name: string): LocaleListMap {
+  const raw = localeField(formData, name)
+  const out: LocaleListMap = {}
+  for (const locale of Object.keys(raw) as (keyof LocaleMap)[]) {
+    const items = (raw[locale] ?? '')
+      .split('\n')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    if (items.length) out[locale] = items
+  }
+  return out
+}
+
 function bodyFromForm(formData: FormData) {
   const coverImageUrl = String(formData.get('cover_image_url') ?? '').trim()
-  const accommodation = String(formData.get('accommodation') ?? '').trim()
-  const mealPlan = String(formData.get('meal_plan') ?? '').trim()
-  const difficulty = String(formData.get('difficulty') ?? '').trim()
 
   const departures = (jsonField<Departure[]>(formData, 'departures_json') ?? []).map((d) => ({
     start_date: d.start_date ? new Date(d.start_date).toISOString() : undefined,
@@ -61,7 +71,7 @@ function bodyFromForm(formData: FormData) {
 
   return {
     name: String(formData.get('name') ?? ''),
-    overview: String(formData.get('overview') ?? ''),
+    overview: localeField(formData, 'overview'),
     region: String(formData.get('region') ?? ''),
     duration_days: Number(formData.get('duration_days') ?? 0) || undefined,
     featured: formData.get('featured') === 'on',
@@ -69,13 +79,13 @@ function bodyFromForm(formData: FormData) {
     categories: listField(formData, 'categories'),
     tags: listField(formData, 'tags'),
     best_seasons: listField(formData, 'best_seasons'),
-    highlights: listFieldLines(formData, 'highlights'),
-    activities: listFieldLines(formData, 'activities'),
-    inclusions: listFieldLines(formData, 'inclusions'),
-    exclusions: listFieldLines(formData, 'exclusions'),
-    accommodation: accommodation || undefined,
-    meal_plan: mealPlan || undefined,
-    difficulty: difficulty || undefined,
+    highlights: localeListField(formData, 'highlights'),
+    activities: localeListField(formData, 'activities'),
+    inclusions: localeListField(formData, 'inclusions'),
+    exclusions: localeListField(formData, 'exclusions'),
+    accommodation: localeField(formData, 'accommodation'),
+    meal_plan: localeField(formData, 'meal_plan'),
+    difficulty: localeField(formData, 'difficulty'),
     departures,
     itinerary: jsonField<ItineraryDay[]>(formData, 'itinerary_json') ?? [],
     cover_image: coverImageUrl ? { url: coverImageUrl } : undefined,

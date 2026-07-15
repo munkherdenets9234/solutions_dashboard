@@ -5,6 +5,7 @@ import { BlogForm } from '@/components/admin/BlogForm'
 import { buttonClass } from '@/components/admin/form'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { ApiError } from '@/lib/api/client'
+import { localeText } from '@/lib/types'
 
 export default async function EditBlogPage({
   params,
@@ -34,7 +35,7 @@ export default async function EditBlogPage({
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-[26px] font-extrabold tracking-tight">Edit post</h1>
-          <p className="text-[13px] text-body mt-1">{blog.title}</p>
+          <p className="text-[13px] text-body mt-1">{localeText(blog.title)}</p>
         </div>
         <div className="flex items-center gap-3">
           <StatusBadge status={blog.status} />

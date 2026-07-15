@@ -2,18 +2,19 @@ import { apiGet, ApiError } from '@/lib/api/client'
 import { listCustomers } from '@/lib/data/customers'
 import { listDestinations } from '@/lib/data/destinations'
 import { listPartners } from '@/lib/data/partners'
-import type { Review } from '@/lib/types'
+import { localeText, type Review } from '@/lib/types'
 
-// /reviews returns `data: null` (not []) when there are no reviews yet —
-// coalesce so list pages can render an empty table. Supports filtering by
-// related tour or partner.
+// Admin list/detail — full locale maps, unlike the public /reviews endpoint
+// (which resolves everything to one language via ?lang=). Also returns
+// `data: null` (not []) when there are no reviews yet — coalesce so list
+// pages can render an empty table. Supports filtering by related tour or partner.
 export async function listReviews(page: number, limit = 10, filters?: { tour?: string; partner?: string }) {
-  const res = await apiGet<Review[] | null>('/reviews', { page, limit, tour: filters?.tour, partner: filters?.partner })
+  const res = await apiGet<Review[] | null>('/admin/reviews', { page, limit, tour: filters?.tour, partner: filters?.partner })
   return { ...res, data: res.data ?? [] }
 }
 
 export function getReviewById(id: string) {
-  return apiGet<Review>(`/reviews/${id}`)
+  return apiGet<Review>(`/admin/reviews/${id}`)
 }
 
 export interface RefOption {
@@ -27,7 +28,8 @@ export interface RefOption {
 export async function buildReviewOptions(limit = 100): Promise<RefOption[]> {
   const { data } = await listReviews(1, limit)
   return data.map((r) => {
-    const excerpt = r.review.length > 60 ? `${r.review.slice(0, 60)}…` : r.review
+    const reviewText = localeText(r.review)
+    const excerpt = reviewText.length > 60 ? `${reviewText.slice(0, 60)}…` : reviewText
     return { value: r.id, label: `${'★'.repeat(r.star)} ${r.related_customer ?? 'Anonymous'} — ${excerpt}` }
   })
 }

@@ -35,10 +35,7 @@ export default async function ToursPage({ searchParams }: { searchParams: Promis
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-[26px] font-extrabold tracking-tight">Tours</h1>
-          <p className="text-[13px] text-body mt-1">
-            Destinations shown here are the active ones the public site lists — the API has no admin view of
-            deactivated tours.
-          </p>
+          <p className="text-[13px] text-body mt-1">Active and inactive tours — toggle Active on a tour's edit page.</p>
         </div>
         <Link href="/tours/new" className={buttonClass}>
           + New tour

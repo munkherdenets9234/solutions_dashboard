@@ -1,15 +1,29 @@
 'use client'
 
 import { useActionState } from 'react'
-import type { Destination } from '@/lib/types'
+import { LOCALES, type Destination, type LocaleMap, type LocaleListMap } from '@/lib/types'
 import type { FormState } from '@/app/(dashboard)/tours/actions'
-import { inputClass, textareaClass, labelClass, buttonClass, errorClass } from './form'
+import { inputClass, labelClass, buttonClass, errorClass } from './form'
 import { ImageUploadField } from './ImageUploadField'
 import { GalleryUploadField, type GalleryImageInput } from './GalleryUploadField'
 import { DeparturesEditor, type DepartureInput } from './DeparturesEditor'
 import { ItineraryEditor, type ItineraryDayInput } from './ItineraryEditor'
 import { PricesEditor, type PriceInput } from './PricesEditor'
-import { RichTextEditor } from './RichTextEditor'
+import { MultiLangField } from './MultiLangField'
+import { MultiLangRichTextEditor } from './MultiLangRichTextEditor'
+
+// Joins each locale's string[] (e.g. Highlights) into one newline- or
+// comma-delimited block per locale, for display in a MultiLangField —
+// actions.ts splits it back into a list per locale at submit time.
+function joinLocaleList(m: LocaleListMap | undefined, sep: string): LocaleMap {
+  const out: LocaleMap = {}
+  if (!m) return out
+  for (const locale of LOCALES) {
+    const v = m[locale]
+    if (v && v.length) out[locale] = v.join(sep)
+  }
+  return out
+}
 
 export function DestinationForm({
   action,
@@ -32,11 +46,11 @@ export function DestinationForm({
 
   const itineraryDefaults: ItineraryDayInput[] = (defaultValues?.itinerary ?? []).map((d) => ({
     day: d.day,
-    title: d.title,
-    description: d.description ?? '',
-    activities: (d.activities ?? []).join(', '),
-    overnight: d.overnight ?? '',
-    meals: (d.meals ?? []).join(', '),
+    title: d.title ?? {},
+    description: d.description ?? {},
+    activities: joinLocaleList(d.activities, ', '),
+    overnight: d.overnight ?? {},
+    meals: joinLocaleList(d.meals, ', '),
   }))
 
   const priceDefaults: PriceInput[] = (defaultValues?.prices ?? []).map((p) => ({
@@ -85,7 +99,7 @@ export function DestinationForm({
         </div>
       ) : null}
 
-      <RichTextEditor name="overview" label="Overview" defaultValue={defaultValues?.overview} />
+      <MultiLangRichTextEditor name="overview" label="Overview" defaultValue={defaultValues?.overview} />
 
       <div className="flex flex-col gap-1.5 max-w-[200px]">
         <label className={labelClass} htmlFor="duration_days">
@@ -139,97 +153,55 @@ export function DestinationForm({
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass} htmlFor="accommodation">
-            Accommodation
-          </label>
-          <input
-            id="accommodation"
-            name="accommodation"
-            placeholder="4-star hotel + ger camps"
-            defaultValue={defaultValues?.accommodation}
-            className={inputClass}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass} htmlFor="meal_plan">
-            Meal plan
-          </label>
-          <input
-            id="meal_plan"
-            name="meal_plan"
-            placeholder="All meals included"
-            defaultValue={defaultValues?.meal_plan}
-            className={inputClass}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass} htmlFor="difficulty">
-            Difficulty
-          </label>
-          <select
-            id="difficulty"
-            name="difficulty"
-            defaultValue={defaultValues?.difficulty ?? ''}
-            className={inputClass}
-          >
-            <option value="">—</option>
-            <option value="easy">Easy</option>
-            <option value="moderate">Moderate</option>
-            <option value="challenging">Challenging</option>
-          </select>
-        </div>
+        <MultiLangField
+          name="accommodation"
+          label="Accommodation"
+          placeholder="4-star hotel + ger camps"
+          defaultValue={defaultValues?.accommodation}
+        />
+        <MultiLangField
+          name="meal_plan"
+          label="Meal plan"
+          placeholder="All meals included"
+          defaultValue={defaultValues?.meal_plan}
+        />
+        <MultiLangField
+          name="difficulty"
+          label="Difficulty"
+          placeholder="easy / moderate / challenging"
+          defaultValue={defaultValues?.difficulty}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass} htmlFor="highlights">
-            Highlights (one per line)
-          </label>
-          <textarea
-            id="highlights"
-            name="highlights"
-            rows={4}
-            defaultValue={defaultValues?.highlights?.join('\n')}
-            className={textareaClass}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass} htmlFor="activities">
-            Activities (one per line)
-          </label>
-          <textarea
-            id="activities"
-            name="activities"
-            rows={4}
-            defaultValue={defaultValues?.activities?.join('\n')}
-            className={textareaClass}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass} htmlFor="inclusions">
-            Inclusions (one per line)
-          </label>
-          <textarea
-            id="inclusions"
-            name="inclusions"
-            rows={4}
-            defaultValue={defaultValues?.inclusions?.join('\n')}
-            className={textareaClass}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass} htmlFor="exclusions">
-            Exclusions (one per line)
-          </label>
-          <textarea
-            id="exclusions"
-            name="exclusions"
-            rows={4}
-            defaultValue={defaultValues?.exclusions?.join('\n')}
-            className={textareaClass}
-          />
-        </div>
+        <MultiLangField
+          name="highlights"
+          label="Highlights (one per line)"
+          multiline
+          rows={4}
+          defaultValue={joinLocaleList(defaultValues?.highlights, '\n')}
+        />
+        <MultiLangField
+          name="activities"
+          label="Activities (one per line)"
+          multiline
+          rows={4}
+          defaultValue={joinLocaleList(defaultValues?.activities, '\n')}
+        />
+        <MultiLangField
+          name="inclusions"
+          label="Inclusions (one per line)"
+          multiline
+          rows={4}
+          defaultValue={joinLocaleList(defaultValues?.inclusions, '\n')}
+        />
+        <MultiLangField
+          name="exclusions"
+          label="Exclusions (one per line)"
+          multiline
+          rows={4}
+          defaultValue={joinLocaleList(defaultValues?.exclusions, '\n')}
+        />
       </div>
 
       <DeparturesEditor name="departures_json" defaultValue={departureDefaults} />

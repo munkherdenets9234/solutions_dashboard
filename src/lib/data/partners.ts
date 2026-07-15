@@ -1,15 +1,24 @@
-import { apiGet } from '@/lib/api/client'
+import { apiGet, ApiError } from '@/lib/api/client'
 import type { Partner } from '@/lib/types'
 
-// /partners returns `data: null` (not []) when the tenant has no partners
-// yet — coalesce so list pages can render an empty table.
+// Admin list/detail — full locale maps, active and inactive alike, unlike
+// the public /partners endpoint (which resolves everything to one language
+// via ?lang= and only returns active records).
 export async function listPartners(page: number, limit = 10) {
-  const res = await apiGet<Partner[] | null>('/partners', { page, limit })
+  const res = await apiGet<Partner[] | null>('/admin/partners', { page, limit })
   return { ...res, data: res.data ?? [] }
 }
 
-// The public GET is slug-based; the admin PUT/DELETE take the Mongo id, which
-// the fetched partner carries.
-export function getPartnerBySlug(slug: string) {
-  return apiGet<Partner>(`/partners/${slug}`)
+export function getPartnerById(id: string) {
+  return apiGet<Partner>(`/admin/partners/${id}`)
+}
+
+// The edit page is slug-routed; resolve slug -> record by scanning the admin
+// list — same constraint as destinations.ts (fine at this scale, no
+// partner-by-slug admin endpoint exists).
+export async function getPartnerBySlug(slug: string): Promise<{ data: Partner }> {
+  const { data } = await listPartners(1, 100)
+  const partner = data.find((p) => p.slug === slug)
+  if (!partner) throw new ApiError(404, 'partner not found')
+  return { data: partner }
 }

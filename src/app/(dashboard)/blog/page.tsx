@@ -5,7 +5,7 @@ import { StatusBadge } from '@/components/admin/StatusBadge'
 import { ErrorNotice } from '@/components/admin/ErrorNotice'
 import { buttonClass } from '@/components/admin/form'
 import { safeLoad } from '@/lib/api/safe'
-import type { Blog } from '@/lib/types'
+import { localeText, type Blog } from '@/lib/types'
 
 export default async function BlogPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page: pageParam } = await searchParams
@@ -15,7 +15,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
   const { data, meta } = result.data
 
   const columns: Column<Blog>[] = [
-    { header: 'Title', render: (b) => <span className="font-semibold">{b.title}</span> },
+    { header: 'Title', render: (b) => <span className="font-semibold">{localeText(b.title)}</span> },
     { header: 'Category', render: (b) => b.category ?? '—' },
     { header: 'Date', render: (b) => b.date ?? '—' },
     { header: 'Status', render: (b) => <StatusBadge status={b.status} /> },

@@ -7,6 +7,28 @@
 // itself only ever exposes customer_id — resolving the name/email requires
 // the dedicated /admin/customers endpoints (see Customer/CustomerDetail).
 
+// Supported content locales — matches the backend's internal/i18n.SupportedLocales.
+export type Locale = 'en' | 'mn'
+export const LOCALES: Locale[] = ['en', 'mn']
+export const DEFAULT_LOCALE: Locale = 'en'
+
+// Translatable fields are stored as locale maps on admin endpoints (e.g.
+// `{"en": "...", "mn": "..."}`) — public endpoints resolve these down to a
+// flat string server-side via `?lang=`, but the admin CMS always works with
+// the full map so every language can be edited at once. A locale key may be
+// absent if that language hasn't been translated yet.
+export type LocaleMap = Partial<Record<Locale, string>>
+export type LocaleListMap = Partial<Record<Locale, string[]>>
+
+// Picks a single display string out of a locale map — the default locale if
+// present, otherwise whatever translation exists. For list/table views where
+// showing every language isn't practical (editing all locales happens on
+// the record's own edit page).
+export function localeText(m?: LocaleMap): string {
+  if (!m) return ''
+  return m[DEFAULT_LOCALE] ?? Object.values(m).find((v): v is string => Boolean(v)) ?? ''
+}
+
 export interface Image {
   url: string
   caption?: string
@@ -20,30 +42,30 @@ export interface Departure {
 
 export interface ItineraryDay {
   day: number
-  title: string
-  description?: string
-  activities?: string[]
-  overnight?: string
-  meals?: string[]
+  title: LocaleMap
+  description?: LocaleMap
+  activities?: LocaleListMap
+  overnight?: LocaleMap
+  meals?: LocaleListMap
 }
 
 export interface Destination {
   id: string
   name: string
   slug: string
-  overview?: string
+  overview?: LocaleMap
   region?: string
   duration_days?: number
   best_seasons?: string[]
   departures?: Departure[]
-  highlights?: string[]
-  activities?: string[]
-  inclusions?: string[]
-  exclusions?: string[]
+  highlights?: LocaleListMap
+  activities?: LocaleListMap
+  inclusions?: LocaleListMap
+  exclusions?: LocaleListMap
   itinerary?: ItineraryDay[]
-  accommodation?: string
-  meal_plan?: string
-  difficulty?: string
+  accommodation?: LocaleMap
+  meal_plan?: LocaleMap
+  difficulty?: LocaleMap
   categories?: string[]
   tags?: string[]
   featured?: boolean
@@ -106,13 +128,13 @@ export interface AirportTransfer {
 
 export interface Blog {
   id: string
-  title: string
+  title: LocaleMap
   slug: string
   category?: string
   read_time?: number
   featured?: boolean
-  excerpt?: string
-  content?: string
+  excerpt?: LocaleMap
+  content?: LocaleMap
   author?: { name: string; role?: string }
   date?: string
   status: string
@@ -131,8 +153,8 @@ export interface Partner {
   name: string
   slug: string
   tag?: string
-  title?: string
-  description?: string
+  title?: LocaleMap
+  description?: LocaleMap
   // Plain URL string, unlike the { url, caption } Image object other resources use.
   image?: string
   web_url?: string
@@ -145,7 +167,7 @@ export interface Partner {
 export interface Review {
   id: string
   star: number
-  review: string
+  review: LocaleMap
   related_customer?: string
   related_tour?: string
   related_partner?: string

@@ -5,9 +5,10 @@ import { useActionState } from 'react'
 import type { Partner, PartnerProduct } from '@/lib/types'
 import type { FormState } from '@/app/(dashboard)/partners/actions'
 import type { RefOption } from '@/lib/data/reviews'
-import { inputClass, textareaClass, labelClass, buttonClass, secondaryButtonClass, errorClass } from './form'
+import { inputClass, labelClass, buttonClass, secondaryButtonClass, errorClass } from './form'
 import { ImageUploadField } from './ImageUploadField'
 import { RefSelect } from './RefSelect'
+import { MultiLangField } from './MultiLangField'
 
 export function PartnerForm({
   action,
@@ -60,20 +61,10 @@ export function PartnerForm({
           </label>
           <input id="tag" name="tag" placeholder="accommodation, dining…" defaultValue={defaultValues?.tag} className={inputClass} />
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass} htmlFor="title">
-            Title
-          </label>
-          <input id="title" name="title" defaultValue={defaultValues?.title} className={inputClass} />
-        </div>
+        <MultiLangField name="title" label="Title" defaultValue={defaultValues?.title} />
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label className={labelClass} htmlFor="description">
-          Description
-        </label>
-        <textarea id="description" name="description" rows={4} defaultValue={defaultValues?.description} className={textareaClass} />
-      </div>
+      <MultiLangField name="description" label="Description" multiline rows={4} defaultValue={defaultValues?.description} />
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">

@@ -4,7 +4,7 @@ import { DataTable, type Column } from '@/components/admin/DataTable'
 import { ErrorNotice } from '@/components/admin/ErrorNotice'
 import { buttonClass } from '@/components/admin/form'
 import { safeLoad } from '@/lib/api/safe'
-import type { Partner } from '@/lib/types'
+import { localeText, type Partner } from '@/lib/types'
 
 export default async function PartnersPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
   const { page: pageParam } = await searchParams
@@ -16,7 +16,7 @@ export default async function PartnersPage({ searchParams }: { searchParams: Pro
   const columns: Column<Partner>[] = [
     { header: 'Name', render: (p) => <span className="font-semibold">{p.name}</span> },
     { header: 'Tag', render: (p) => p.tag ?? '—' },
-    { header: 'Title', render: (p) => p.title ?? '—' },
+    { header: 'Title', render: (p) => localeText(p.title) || '—' },
     { header: 'Products', render: (p) => p.products?.length ?? 0 },
     {
       header: '',

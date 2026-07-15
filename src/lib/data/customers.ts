@@ -4,9 +4,11 @@ import type { Customer, CustomerDetail } from '@/lib/types'
 
 // Unlike bookings/rentals/transfers, both customer endpoints sit behind the
 // "admin" role (not just the tenant X-API-Key) — a staff token gets a 403.
+// The Go backend serializes an empty result set as `null`, not `[]`.
 export async function listCustomers(page: number, limit = 20) {
   const token = await requireToken()
-  return apiGet<Customer[]>('/admin/customers', { page, limit }, token)
+  const res = await apiGet<Customer[] | null>('/admin/customers', { page, limit }, token)
+  return { ...res, data: res.data ?? [] }
 }
 
 export async function getCustomer(id: string) {

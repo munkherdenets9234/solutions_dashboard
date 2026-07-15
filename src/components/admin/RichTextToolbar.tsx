@@ -1,10 +1,6 @@
 'use client'
 
-import { useState } from 'react'
-import { useEditor, EditorContent, type Editor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Link from '@tiptap/extension-link'
-import { labelClass } from './form'
+import type { Editor } from '@tiptap/react'
 
 function ToolbarButton({
   onClick,
@@ -35,7 +31,7 @@ function ToolbarButton({
   )
 }
 
-function Toolbar({ editor }: { editor: Editor }) {
+export function Toolbar({ editor }: { editor: Editor }) {
   return (
     <div className="flex flex-wrap items-center gap-1 border-b border-input-border px-2 py-1.5">
       <ToolbarButton label="Bold" active={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
@@ -115,41 +111,6 @@ function Toolbar({ editor }: { editor: Editor }) {
       <ToolbarButton label="Redo" onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}>
         Redo
       </ToolbarButton>
-    </div>
-  )
-}
-
-export function RichTextEditor({
-  name,
-  label,
-  defaultValue,
-}: {
-  name: string
-  label: string
-  defaultValue?: string
-}) {
-  const [html, setHtml] = useState(defaultValue ?? '')
-
-  const editor = useEditor({
-    extensions: [StarterKit, Link.configure({ openOnClick: false, autolink: true })],
-    content: defaultValue ?? '',
-    immediatelyRender: false,
-    editorProps: {
-      attributes: {
-        class: 'tiptap min-h-[240px] px-3 py-2 text-sm outline-none',
-      },
-    },
-    onUpdate: ({ editor }) => setHtml(editor.getHTML()),
-  })
-
-  return (
-    <div className="flex flex-col gap-1.5">
-      <label className={labelClass}>{label}</label>
-      <input type="hidden" name={name} value={html} readOnly />
-      <div className="rounded-md border border-input-border bg-panel">
-        {editor ? <Toolbar editor={editor} /> : null}
-        <EditorContent editor={editor} />
-      </div>
     </div>
   )
 }

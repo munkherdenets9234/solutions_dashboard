@@ -4,7 +4,7 @@ import { DataTable, type Column } from '@/components/admin/DataTable'
 import { ErrorNotice } from '@/components/admin/ErrorNotice'
 import { buttonClass } from '@/components/admin/form'
 import { safeLoad } from '@/lib/api/safe'
-import type { Review } from '@/lib/types'
+import { localeText, type Review } from '@/lib/types'
 
 export default async function ReviewsPage({
   searchParams,
@@ -19,7 +19,7 @@ export default async function ReviewsPage({
 
   const columns: Column<Review>[] = [
     { header: 'Rating', render: (r) => <span className="font-semibold">{'★'.repeat(r.star)}</span> },
-    { header: 'Review', render: (r) => <span className="line-clamp-2">{r.review}</span> },
+    { header: 'Review', render: (r) => <span className="line-clamp-2">{localeText(r.review)}</span> },
     { header: 'Customer', render: (r) => r.related_customer ?? '—' },
     { header: 'Tour', render: (r) => r.related_tour ?? '—' },
     { header: 'Partner', render: (r) => r.related_partner ?? '—' },

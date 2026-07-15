@@ -1,8 +1,10 @@
 import { apiGet } from '@/lib/api/client'
 import type { Booking } from '@/lib/types'
 
-export function listBookings(page: number, limit = 10) {
-  return apiGet<Booking[]>('/admin/bookings', { page, limit })
+// The Go backend serializes an empty result set as `null`, not `[]`.
+export async function listBookings(page: number, limit = 10) {
+  const res = await apiGet<Booking[] | null>('/admin/bookings', { page, limit })
+  return { ...res, data: res.data ?? [] }
 }
 
 export function getBooking(id: string) {

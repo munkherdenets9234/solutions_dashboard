@@ -1,8 +1,10 @@
 import { apiGet } from '@/lib/api/client'
 import type { Car } from '@/lib/types'
 
-export function listCars(page: number, limit = 10) {
-  return apiGet<Car[]>('/cars', { page, limit })
+// The Go backend serializes an empty result set as `null`, not `[]`.
+export async function listCars(page: number, limit = 10) {
+  const res = await apiGet<Car[] | null>('/cars', { page, limit })
+  return { ...res, data: res.data ?? [] }
 }
 
 export function getCarBySlug(slug: string) {

@@ -3,9 +3,10 @@
 import { useActionState } from 'react'
 import type { Blog } from '@/lib/types'
 import type { FormState } from '@/app/(dashboard)/blog/actions'
-import { inputClass, textareaClass, labelClass, buttonClass, errorClass } from './form'
+import { inputClass, labelClass, buttonClass, errorClass } from './form'
 import { ImageUploadField } from './ImageUploadField'
-import { RichTextEditor } from './RichTextEditor'
+import { MultiLangField } from './MultiLangField'
+import { MultiLangRichTextEditor } from './MultiLangRichTextEditor'
 
 export function BlogForm({
   action,
@@ -23,12 +24,7 @@ export function BlogForm({
   return (
     <form action={formAction} className="flex flex-col gap-4 max-w-2xl">
       <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass} htmlFor="title">
-            Title
-          </label>
-          <input id="title" name="title" required defaultValue={defaultValues?.title} className={inputClass} />
-        </div>
+        <MultiLangField name="title" label="Title" defaultValue={defaultValues?.title} />
         {!isEdit ? (
           <div className="flex flex-col gap-1.5">
             <label className={labelClass} htmlFor="slug">
@@ -61,12 +57,7 @@ export function BlogForm({
         </div>
       </div>
 
-      <div className="flex flex-col gap-1.5">
-        <label className={labelClass} htmlFor="excerpt">
-          Excerpt
-        </label>
-        <textarea id="excerpt" name="excerpt" rows={3} defaultValue={defaultValues?.excerpt} className={textareaClass} />
-      </div>
+      <MultiLangField name="excerpt" label="Excerpt" multiline rows={3} defaultValue={defaultValues?.excerpt} />
 
       <div className="flex flex-col gap-1.5">
         <label className={labelClass} htmlFor="tags">
@@ -75,7 +66,7 @@ export function BlogForm({
         <input id="tags" name="tags" defaultValue={defaultValues?.tags?.join(', ')} className={inputClass} />
       </div>
 
-      <RichTextEditor name="content" label="Content" defaultValue={defaultValues?.content} />
+      <MultiLangRichTextEditor name="content" label="Content" defaultValue={defaultValues?.content} />
 
       <ImageUploadField name="cover_image_url" label="Cover image" defaultValue={defaultValues?.cover_image?.url} />
 
