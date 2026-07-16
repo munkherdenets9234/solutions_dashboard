@@ -41,7 +41,6 @@ export default async function EditReviewPage({ params }: { params: Promise<{ id:
         submitLabel="Save changes"
         customerOptions={options.customers}
         tourOptions={options.tours}
-        partnerOptions={options.partners}
       />
     </div>
   )

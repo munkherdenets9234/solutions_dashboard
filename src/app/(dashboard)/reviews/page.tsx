@@ -9,11 +9,11 @@ import { localeText, type Review } from '@/lib/types'
 export default async function ReviewsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; tour?: string; partner?: string }>
+  searchParams: Promise<{ page?: string; tour?: string }>
 }) {
-  const { page: pageParam, tour, partner } = await searchParams
+  const { page: pageParam, tour } = await searchParams
   const page = Math.max(1, Number(pageParam) || 1)
-  const result = await safeLoad(() => listReviews(page, 10, { tour, partner }))
+  const result = await safeLoad(() => listReviews(page, 10, { tour }))
   if (!result.ok) return <ErrorNotice message={result.message} />
   const { data, meta } = result.data
 
@@ -22,7 +22,6 @@ export default async function ReviewsPage({
     { header: 'Review', render: (r) => <span className="line-clamp-2">{localeText(r.review)}</span> },
     { header: 'Customer', render: (r) => r.related_customer ?? '—' },
     { header: 'Tour', render: (r) => r.related_tour ?? '—' },
-    { header: 'Partner', render: (r) => r.related_partner ?? '—' },
     {
       header: '',
       align: 'right',
@@ -40,7 +39,7 @@ export default async function ReviewsPage({
         <div>
           <h1 className="text-[26px] font-extrabold tracking-tight">Reviews</h1>
           <p className="text-[13px] text-body mt-1">
-            Customer reviews shown on the public site, optionally linked to a tour or partner.
+            Customer reviews shown on the public site, optionally linked to a tour.
           </p>
         </div>
         <Link href="/reviews/new" className={buttonClass}>
@@ -53,7 +52,7 @@ export default async function ReviewsPage({
         getRowKey={(r) => r.id}
         meta={meta}
         basePath="/reviews"
-        query={{ tour, partner }}
+        query={{ tour }}
         emptyMessage="No reviews yet."
       />
     </div>

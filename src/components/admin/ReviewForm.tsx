@@ -14,14 +14,12 @@ export function ReviewForm({
   submitLabel,
   customerOptions,
   tourOptions,
-  partnerOptions,
 }: {
   action: (prevState: FormState, formData: FormData) => Promise<FormState>
   defaultValues?: Partial<Review>
   submitLabel: string
   customerOptions: RefOption[]
   tourOptions: RefOption[]
-  partnerOptions: RefOption[]
 }) {
   const [state, formAction, pending] = useActionState(action, {})
 
@@ -45,7 +43,7 @@ export function ReviewForm({
 
       <MultiLangField name="review" label="Review" multiline rows={4} defaultValue={defaultValues?.review} />
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <RefSelect
           id="related_customer"
           name="related_customer"
@@ -59,13 +57,6 @@ export function ReviewForm({
           label="Tour"
           options={tourOptions}
           defaultValue={defaultValues?.related_tour}
-        />
-        <RefSelect
-          id="related_partner"
-          name="related_partner"
-          label="Partner"
-          options={partnerOptions}
-          defaultValue={defaultValues?.related_partner}
         />
       </div>
 

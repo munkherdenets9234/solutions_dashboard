@@ -16,7 +16,6 @@ export default async function NewReviewPage() {
         submitLabel="Create review"
         customerOptions={options.customers}
         tourOptions={options.tours}
-        partnerOptions={options.partners}
       />
     </div>
   )
