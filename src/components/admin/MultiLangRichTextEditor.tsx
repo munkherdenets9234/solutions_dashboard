@@ -8,7 +8,7 @@ import { LOCALES, DEFAULT_LOCALE, type Locale, type LocaleMap } from '@/lib/type
 import { labelClass } from './form'
 import { Toolbar } from './RichTextToolbar'
 
-const localeLabel: Record<Locale, string> = { en: 'EN', mn: 'MN' }
+const localeLabel: Record<Locale, string> = { en: 'EN', mn: 'MN', ko: 'KO' }
 
 // One Tiptap instance per locale, all mounted at once and toggled with the
 // `hidden` class rather than conditionally rendered — switching locale tabs

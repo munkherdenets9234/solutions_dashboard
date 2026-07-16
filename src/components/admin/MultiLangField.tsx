@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { LOCALES, DEFAULT_LOCALE, type Locale, type LocaleMap } from '@/lib/types'
 import { inputClass, textareaClass, labelClass } from './form'
 
-const localeLabel: Record<Locale, string> = { en: 'EN', mn: 'MN' }
+const localeLabel: Record<Locale, string> = { en: 'EN', mn: 'MN', ko: 'KO' }
 
 // Controlled locale-tabbed input/textarea, with no hidden input of its own —
 // for embedding inside components that own their own serialization (e.g.

@@ -8,8 +8,8 @@
 // the dedicated /admin/customers endpoints (see Customer/CustomerDetail).
 
 // Supported content locales — matches the backend's internal/i18n.SupportedLocales.
-export type Locale = 'en' | 'mn'
-export const LOCALES: Locale[] = ['en', 'mn']
+export type Locale = 'en' | 'mn' | 'ko'
+export const LOCALES: Locale[] = ['en', 'mn', 'ko']
 export const DEFAULT_LOCALE: Locale = 'en'
 
 // Translatable fields are stored as locale maps on admin endpoints (e.g.
