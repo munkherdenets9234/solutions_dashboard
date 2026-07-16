@@ -28,10 +28,15 @@ function bodyFromForm(formData: FormData) {
   }
 }
 
+const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/
+
 export async function createCarAction(_prevState: FormState, formData: FormData): Promise<FormState> {
   const token = await requireToken()
   const slug = String(formData.get('slug') ?? '').trim()
   if (!slug) return { error: 'Slug is required.' }
+  if (!SLUG_PATTERN.test(slug)) {
+    return { error: 'Slug must be lowercase letters, numbers and hyphens only (e.g. "land-cruiser-70") — no spaces or slashes.' }
+  }
 
   try {
     await apiPost<Car>('/admin/cars', { ...bodyFromForm(formData), slug }, token)
