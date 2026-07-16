@@ -23,17 +23,8 @@ export function BlogForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-4 max-w-2xl">
-      <div className="grid grid-cols-2 gap-4">
-        <MultiLangField name="title" label="Title" defaultValue={defaultValues?.title} />
-        {!isEdit ? (
-          <div className="flex flex-col gap-1.5">
-            <label className={labelClass} htmlFor="slug">
-              Slug
-            </label>
-            <input id="slug" name="slug" required defaultValue={defaultValues?.slug} className={inputClass} />
-          </div>
-        ) : null}
-      </div>
+      <MultiLangField name="title" label="Title" defaultValue={defaultValues?.title} />
+      {!isEdit ? <p className="text-xs text-body">The URL slug will be generated automatically from the English title.</p> : null}
 
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-1.5">

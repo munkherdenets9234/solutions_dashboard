@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { apiPost, apiPut, apiDelete, ApiError } from '@/lib/api/client'
 import { requireToken } from '@/lib/auth/session'
+import { slugify } from '@/lib/slug'
 import type { Destination, Departure, ItineraryDay, Image, LocaleMap, LocaleListMap } from '@/lib/types'
 
 export interface FormState {
@@ -96,8 +97,9 @@ function bodyFromForm(formData: FormData) {
 
 export async function createDestinationAction(_prevState: FormState, formData: FormData): Promise<FormState> {
   const token = await requireToken()
-  const slug = String(formData.get('slug') ?? '').trim()
-  if (!slug) return { error: 'Slug is required.' }
+  const name = String(formData.get('name') ?? '').trim()
+  const slug = slugify(name)
+  if (!slug) return { error: 'Name is required to generate a slug.' }
 
   try {
     await apiPost<Destination>('/admin/destinations', { ...bodyFromForm(formData), slug }, token)

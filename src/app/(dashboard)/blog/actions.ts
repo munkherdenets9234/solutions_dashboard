@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { apiPost, apiPut, ApiError } from '@/lib/api/client'
 import { requireToken } from '@/lib/auth/session'
+import { slugify } from '@/lib/slug'
 import type { Blog, LocaleMap } from '@/lib/types'
 
 export interface FormState {
@@ -46,8 +47,10 @@ function bodyFromForm(formData: FormData) {
 
 export async function createBlogAction(_prevState: FormState, formData: FormData): Promise<FormState> {
   const token = await requireToken()
-  const slug = String(formData.get('slug') ?? '').trim()
-  if (!slug) return { error: 'Slug is required.' }
+  const title = localeField(formData, 'title')
+  const titleText = title.en || Object.values(title).find(Boolean) || ''
+  const slug = slugify(titleText)
+  if (!slug) return { error: 'A title is required to generate a slug.' }
 
   let created: Blog
   try {

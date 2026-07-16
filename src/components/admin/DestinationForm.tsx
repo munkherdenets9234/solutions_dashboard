@@ -1,8 +1,9 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { LOCALES, type Destination, type LocaleMap, type LocaleListMap } from '@/lib/types'
 import type { FormState } from '@/app/(dashboard)/tours/actions'
+import { slugify } from '@/lib/slug'
 import { inputClass, labelClass, buttonClass, errorClass } from './form'
 import { ImageUploadField } from './ImageUploadField'
 import { GalleryUploadField, type GalleryImageInput } from './GalleryUploadField'
@@ -37,6 +38,7 @@ export function DestinationForm({
   isEdit?: boolean
 }) {
   const [state, formAction, pending] = useActionState(action, {})
+  const [name, setName] = useState(defaultValues?.name ?? '')
 
   const departureDefaults: DepartureInput[] = (defaultValues?.departures ?? []).map((d) => ({
     start_date: d.start_date ? d.start_date.slice(0, 10) : '',
@@ -71,14 +73,21 @@ export function DestinationForm({
           <label className={labelClass} htmlFor="name">
             Name
           </label>
-          <input id="name" name="name" required defaultValue={defaultValues?.name} className={inputClass} />
+          <input
+            id="name"
+            name="name"
+            required
+            defaultValue={defaultValues?.name}
+            onChange={(e) => setName(e.target.value)}
+            className={inputClass}
+          />
         </div>
         {!isEdit ? (
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass} htmlFor="slug">
-              Slug
+            <label className={labelClass} htmlFor="slug-preview">
+              Slug (auto-generated)
             </label>
-            <input id="slug" name="slug" required defaultValue={defaultValues?.slug} className={inputClass} />
+            <input id="slug-preview" disabled value={slugify(name)} className={`${inputClass} opacity-60`} />
           </div>
         ) : (
           <div className="flex flex-col gap-1.5">

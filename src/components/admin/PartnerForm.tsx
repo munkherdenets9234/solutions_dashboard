@@ -5,6 +5,7 @@ import { useActionState } from 'react'
 import type { Partner, PartnerProduct } from '@/lib/types'
 import type { FormState } from '@/app/(dashboard)/partners/actions'
 import type { RefOption } from '@/lib/data/reviews'
+import { slugify } from '@/lib/slug'
 import { inputClass, labelClass, buttonClass, secondaryButtonClass, errorClass } from './form'
 import { ImageUploadField } from './ImageUploadField'
 import { RefSelect } from './RefSelect'
@@ -24,6 +25,7 @@ export function PartnerForm({
   reviewOptions: RefOption[]
 }) {
   const [state, formAction, pending] = useActionState(action, {})
+  const [name, setName] = useState(defaultValues?.name ?? '')
   // Rows carry a stable client-side key (not index) because ImageUploadField
   // is uncontrolled after mount — an index key would let a removed row's
   // upload state "stick" to whichever row shifts into its position.
@@ -42,14 +44,21 @@ export function PartnerForm({
           <label className={labelClass} htmlFor="name">
             Name
           </label>
-          <input id="name" name="name" required defaultValue={defaultValues?.name} className={inputClass} />
+          <input
+            id="name"
+            name="name"
+            required
+            defaultValue={defaultValues?.name}
+            onChange={(e) => setName(e.target.value)}
+            className={inputClass}
+          />
         </div>
         {!isEdit ? (
           <div className="flex flex-col gap-1.5">
-            <label className={labelClass} htmlFor="slug">
-              Slug
+            <label className={labelClass} htmlFor="slug-preview">
+              Slug (auto-generated)
             </label>
-            <input id="slug" name="slug" required defaultValue={defaultValues?.slug} className={inputClass} />
+            <input id="slug-preview" disabled value={slugify(name)} className={`${inputClass} opacity-60`} />
           </div>
         ) : null}
       </div>
