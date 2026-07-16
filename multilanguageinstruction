@@ -1,0 +1,283 @@
+# i18n (EN/MN) content across backend, admin, frontend
+
+## Context
+
+Blog, Partner, and Destination content (titles, descriptions, itinerary text, etc.) is
+currently stored and served as flat strings in a single language. The site needs to
+serve English and Mongolian versions of this content. The user proposed a 3-phase plan
+(backend → admin → frontend); research against the actual codebase confirmed most of it
+but found real gaps (missing admin GET routes for 2 of 3 models, an incorrect Mongo
+dot-notation claim, unaddressed nested content, and an underspecified rich-text UI). This
+plan is the corrected version, with open questions resolved by the user:
+
+- **Itinerary** (`Destination.Itinerary[].{Title,Description,Activities,Meals}`) becomes
+  translatable — it's the actively-edited day-by-day content added this session.
+- **Partner.Products** stays a plain (non-translatable) string per product — not
+  converted in this pass.
+- **Blog.Body** stays untouched — it's not exposed in `BlogForm.tsx` today (only
+  `Content` is edited), so there's nothing to convert.
+- **`Partner.Name` / `Destination.Name`** stay plain strings (treated as proper nouns),
+  not translated.
+- **Rich text i18n** (`Blog.Content`, `Destination.Overview`): mount one `RichTextEditor`
+  Tiptap instance per locale, all mounted simultaneously, switched via CSS
+  show/hide on the active tab (avoids losing editor state on tab switch).
+- **Migration**: a one-off Go script under `cmd/migrate-i18n/`, run manually by the user
+  against the live Atlas cluster (`MONGO_URI`/`MONGO_DB=eandstravel`) — not run
+  automatically by me.
+
+Implementation proceeds in the same order the user specified: backend first (everything
+else depends on it), then admin, then frontend. Given the size, treat each phase as a
+checkpoint — verify the backend compiles/serves correctly before starting admin, etc.
+
+---
+
+## Phase 1 — Backend (`digitalservice`)
+
+### 1. Locale package — `internal/i18n/locale.go` (new)
+
+```go
+package i18n
+
+const DefaultLocale = "en"
+var SupportedLocales = []string{"en", "mn"}
+
+func IsSupported(locale string) bool { ... }
+func Resolve(m map[string]string, locale string) string {
+    // m[locale] if present and non-empty, else m[DefaultLocale], else "" (or first value found)
+}
+func ResolveList(m map[string][]string, locale string) []string {
+    // same fallback logic
+}
+func ResolveFromRequest(c *gin.Context) string {
+    // ?lang= query param -> validate against SupportedLocales
+    // else parse Accept-Language header, take first supported match
+    // else DefaultLocale
+}
+```
+`ResolveFromRequest` is a plain function called at the top of each public handler (not
+gin middleware) — only ~6 handlers need it, so a shared router-level middleware isn't
+worth the indirection.
+
+### 2. Models — `internal/models/{blog,partner,destination}.go`
+
+Convert to locale maps, keeping non-translatable fields as-is (per decisions above):
+
+- **`Blog`**: `Title`, `Excerpt`, `Content`, `Quote` → `map[string]string`. `Tags` stays
+  `[]string` (not free text). `Body []BlogSection` **left untouched** (out of scope).
+- **`Partner`**: `Title`, `Description` → `map[string]string`. `Name`, `Tag` stay plain
+  strings. `Products []PartnerProduct` **left untouched** (out of scope, per decision).
+- **`Destination`**: `Overview`, `Accommodation`, `MealPlan`, `Difficulty` →
+  `map[string]string`. `Highlights`, `Activities`, `Inclusions`, `Exclusions` →
+  `map[string][]string`. `Name`, `Region`, `BestSeasons`, `Categories`, `Tags` stay as
+  today (proper noun / filter-key fields — converting `BestSeasons`/`Categories` would
+  break the exact-match filters in `destination_service.go:33-34,39-40`).
+  - `ItineraryDay` (`destination.go:20-27`): `Title`, `Description` → `map[string]string`;
+    `Activities`, `Meals` → `map[string][]string`. `Day`, `Overnight` — wait, `Overnight`
+    is free text too (e.g. "Ger Camp") and was rendered on the frontend as
+    "Accommodation" this session — convert it to `map[string]string` as well for
+    consistency with `Accommodation`/`MealPlan` at the top level.
+
+### 3. Validation — `internal/service/*_service.go`
+
+**No changes needed.** Research found the only existing validation checks are on
+`Slug` (Blog, Destination) and `Partner.Name` (`partner_service.go:59`) — none of these
+fields are being converted to locale maps, so no `== ""` check needs to change.
+
+### 4. DTOs — new `internal/dto` package
+
+`BlogResponse`, `PartnerResponse`, `DestinationResponse` (+ nested
+`DestinationItineraryDayResponse`) with flat string/[]string fields matching today's
+pre-migration shape, and mapper functions:
+
+```go
+func ToBlogResponse(b *models.Blog, locale string) BlogResponse
+func ToPartnerResponse(p *models.Partner, locale string) PartnerResponse
+func ToDestinationResponse(d *models.Destination, locale string) DestinationResponse
+```
+Each uses `i18n.Resolve`/`i18n.ResolveList` per field. List-response variants
+(`ToBlogResponses([]*models.Blog, locale) []BlogResponse`, etc.) for the `List` handlers.
+
+### 5. Wire DTOs into public GET handlers
+
+`internal/handler/{blog,partner,destination}_handler.go` — `List`, `GetBySlug`: resolve
+locale via `i18n.ResolveFromRequest(c)`, map to DTO, `response.OK`/`response.List` with
+the DTO instead of the raw model. Mechanical — these are today's trivial pass-throughs
+per research.
+
+### 6. Add missing admin GET routes (Partner, Destination)
+
+Blog already has `ListAdmin`/`GetByID` wired at `router.go:192-193`, returning raw models
+(untouched, per the original plan). **Partner and Destination have no admin GET routes at
+all** — needed so the admin edit forms can load full locale-map data. Add, mirroring the
+Blog pattern:
+- `PartnerHandler.ListAdmin` / `PartnerHandler.GetByID` (new handler methods) +
+  `router.go`: `tenantScoped.GET("/admin/partners", ...)`, `GET("/admin/partners/:id", ...)`.
+- `DestinationHandler.GetByID` (new; `List` can likely be reused/adapted for
+  `ListAdmin` since `DestinationRepo.FindByID` already exists) +
+  `router.go`: `tenantScoped.GET("/admin/destinations", ...)`, `GET("/admin/destinations/:id", ...)`.
+  Check `PartnerRepo` for an existing `FindByID`/`FindAll`-without-filter equivalent;
+  add if missing, following `DestinationRepo`/`BlogRepo`'s existing methods as the
+  template.
+These return raw models (full locale maps), unauthenticated-tenant-scoped like other
+`/admin/*` routes — no DTO involved.
+
+### 7. Create/Update handlers
+
+No code changes — confirmed `ShouldBindJSON`/`bson.M` already accept map-shaped JSON on
+write. Per-locale dot-notation PATCH (`"title.mn": "..."`) will work **after** the
+migration (step 8) converts existing documents' fields from strings to embedded docs —
+note this dependency doesn't require code changes, just migration-before-first-PATCH.
+
+### 8. Migration script — `cmd/migrate-i18n/main.go` (new)
+
+Connects via `MONGO_URI`/`MONGO_DB` (same config as `cmd/api/main.go`), and for each
+affected collection (`blogs`, `partners`, `destinations`), for each document, wraps
+existing flat string values into `{"en": "<value>"}` for every converted field
+(including nested `itinerary[].title`/`description`/`activities`/`meals`/`overnight`),
+using `$set` with the already-string values re-written as objects (read doc as
+`bson.M`, transform in Go, write back — not a Mongo-side dot-notation `$set`, since the
+whole point is the current type doesn't support that yet). Idempotent: skip fields
+already shaped as an object. I will write this script but **will not run it** — the user
+runs it manually against Atlas when ready.
+
+### 9. `internal/handler/docs/openapi.json`
+
+Manual edit (confirmed hand-authored, not generated) — update the response schemas for
+`GET /destinations`, `GET /destinations/:slug`, `GET /blogs`, `GET /blogs/:slug`,
+`GET /partners`, `GET /partners/:slug` to the new flat DTO shape, and add the new
+`GET /admin/partners`, `GET /admin/partners/:id`, `GET /admin/destinations`,
+`GET /admin/destinations/:id` entries (locale-map shape, matching the existing
+`GET /admin/blogs` doc entry as a template) plus the new `?lang=` query param.
+
+### Backend verification
+- `go build ./...` and `go vet ./...` clean.
+- Start the API locally (`cmd/api`), hit `GET /api/v1/destinations?lang=mn` and
+  `?lang=en` (and with no `lang` at all) against a migrated doc, confirm flat strings
+  resolve correctly with fallback to `en` for missing translations.
+- Hit new `GET /api/v1/admin/partners/:id` and `GET /api/v1/admin/destinations/:id`,
+  confirm they return full `{"en":..., "mn":...}` maps.
+- Confirm existing `POST`/`PUT` admin flows still accept plain object bodies
+  (`{"title": {"en": "...", "mn": "..."}}`) end to end.
+
+---
+
+## Phase 2 — Admin (`admin`)
+
+### 1. Locale type — `src/lib/types.ts` (or new `src/lib/locale.ts`)
+`export type Locale = 'en' | 'mn'`, `export const LOCALES: Locale[] = ['en', 'mn']`,
+`export const DEFAULT_LOCALE: Locale = 'en'`.
+
+### 2. `<MultiLangField>` — new `src/components/admin/MultiLangField.tsx`
+Built from scratch (research confirmed no existing tab UI to reuse). Locale tabs +
+single `<input>`/`<textarea>` swapped per active tab, serializing to one hidden JSON
+input — same pattern as `RichTextEditor.tsx`'s `<input type="hidden" name={name}
+value={html} readOnly />`, so `actions.ts` needs only `jsonField<Record<Locale,string>>`
+(the helper already exists in `tours/actions.ts:27-35`) instead of `String(...)`.
+Support a `multiline` prop for textarea vs input, and a `list` mode for
+`Highlights`/`Activities`/`Inclusions`/`Exclusions` (`Record<Locale, string>`, still
+newline-delimited per locale — the per-locale value is the whole multi-line block, split
+into a `string[]` at submit time same as today's `listFieldLines`).
+
+### 3. `<MultiLangRichTextEditor>` — new `src/components/admin/MultiLangRichTextEditor.tsx`
+Per user decision: mount one `RichTextEditor`-equivalent Tiptap instance per locale
+simultaneously, toggle visibility via CSS (`hidden` class) on the inactive tab's
+container, not conditional unmounting — avoids re-init/focus loss. Serializes to one
+hidden JSON input (`Record<Locale, string>` of HTML). Used for `Blog.content` and
+`Destination.overview`.
+
+### 4. Wire into forms
+- **`DestinationForm.tsx`**: `overview` → `<MultiLangRichTextEditor>`. `accommodation`,
+  `meal_plan` → `<MultiLangField>`. `highlights`/`activities`/`inclusions`/`exclusions` →
+  `<MultiLangField list>`. `name` stays plain `<input>` (per decision). `ItineraryEditor`
+  needs its per-day `title`/`description`/`activities`/`meals`/`overnight` fields to
+  become locale-aware too — extend `ItineraryDayInput` and its row UI to embed
+  `<MultiLangField>` per sub-field (most invasive single change in this phase, since
+  `ItineraryEditor` is a repeating-row component).
+- **`BlogForm.tsx`**: `title` → `<MultiLangField>`, `excerpt` → `<MultiLangField
+  multiline>`, `content` → `<MultiLangRichTextEditor>`. `category`/`tags` unchanged.
+- **`PartnerForm.tsx`**: `title` → `<MultiLangField>`, `description` →
+  `<MultiLangField multiline>`. `name`, `tag`, `product_name`/`product_description`
+  stay plain (per decision — Products excluded from scope).
+- **`ReviewForm.tsx`**: `review` → `<MultiLangField multiline>`.
+
+### 5. Form state types & `actions.ts`
+Each `bodyFromForm`-equivalent (`tours/actions.ts`, `blog/actions.ts`,
+`partners/actions.ts`, `reviews/actions.ts`) swaps the plain-string field reads for
+`jsonField<Record<Locale,string>>(formData, '<name>') ?? {}` on the converted fields —
+sends the map straight through to `/admin/...`, no reshaping (per original plan, now
+mechanically correct given the hidden-JSON-input serialization in step 2/3).
+
+### 6. Data fetching for edit pages
+`getDestinationBySlug`/equivalent for Partner and Blog edit pages need to hit the (now
+newly added in Phase 1) admin `GET .../:id` endpoints so they receive full locale maps
+to pre-fill each tab — confirm `src/lib/data/destinations.ts` (or equivalent) targets
+`/admin/destinations/:id` and `/admin/partners/:id`, adding the client calls if the
+admin data layer doesn't already have a "get by id" function for Partner (Blog's
+already exists per the existing `admin/blogs/:id` route).
+
+### 7. List/table pages
+`blog/page.tsx:18`, `partners/page.tsx:17-19`, `tours/page.tsx:18`,
+`reviews/page.tsx:22` — each `render: (x) => x.field` becomes
+`x.field[DEFAULT_LOCALE] ?? Object.values(x.field)[0] ?? '—'`.
+
+### Admin verification
+- `npx tsc --noEmit` clean.
+- Preview: create/edit a Destination with both `en` and `mn` overview text (including
+  itinerary day fields), confirm the hidden inputs serialize both locales, submit, and
+  reload the edit page to confirm both locales round-trip from the backend correctly.
+- Confirm list pages don't crash on records that only have `en` (no `mn` key yet,
+  pre-migration or partially-translated).
+
+---
+
+## Phase 3 — Public frontend (`eandstravelmongolia`)
+
+### 1. `lib/data/*.ts` — thread `locale: Locale` through
+`getAllTours`, `getTourBySlug`, `getAllArticles`, `getArticleBySlug`, `getAllPartners`,
+`getPartnerBySlug` (and their wrappers `getTours`, `getFeaturedTours`,
+`getRelatedTours`, `getArticles`, `getRelatedArticles`) each gain a `locale: Locale`
+parameter, forwarded as `{ ...existingParams, lang: locale }` into `apiGet`. `apiGet`
+itself (`src/lib/api/client.ts:63`) needs no changes — already takes arbitrary
+`searchParams`.
+
+### 2. Page call sites
+Every `[locale]/**/page.tsx` already destructures `{ locale }` from `params` — just pass
+it into the data calls (`getTourBySlug(slug, locale)`, etc.) at each site research
+enumerated. **Two gaps need fixing first**, not just "pass the existing variable":
+- `src/app/[locale]/page.tsx` (homepage) currently has no `params` prop at all — add
+  `{ params }: { params: Promise<{ locale: string }> }` and `const { locale } =
+  await params` like every other page.
+- `src/app/api/tours/route.ts`, `src/app/api/tours/[slug]/route.ts`,
+  `src/app/api/journal/route.ts`, `src/app/api/journal/[slug]/route.ts`, and
+  `src/app/sitemap.ts` have no locale route param in scope (not under `[locale]`) —
+  default these to `defaultLocale` (`'en'`) from `src/lib/i18n.ts`, matching the
+  backend's own default-locale fallback.
+
+### 3. Types unchanged
+Confirmed: `Tour`/`Partner`/`JournalArticle` interfaces stay flat strings — the backend
+DTO resolves to a single locale server-side, so the frontend shape is unchanged from
+today. No `dangerouslySetInnerHTML` sites need changes beyond receiving already-resolved
+HTML strings (backend DTO for `overview`/`content` resolves the locale map to one HTML
+string before responding — confirmed by the Phase 1 DTO design, not a frontend concern).
+
+### 4. Caching
+No extra work — confirmed `apiGet`'s `next: { revalidate: 300 }` caches per full URL, so
+`lang=en` vs `lang=mn` are independent cache entries automatically, as long as `lang` is
+included in the same `searchParams` object passed to `apiGet` (not appended separately).
+
+### Frontend verification
+- `npx tsc --noEmit` clean.
+- Preview: visit `/en/tours/<slug>` and `/mn/tours/<slug>` for a tour with both locales
+  translated in the admin, confirm overview/itinerary/highlights render the correct
+  language on each.
+- Confirm a tour with only `en` translated still renders correctly (fallback) under
+  `/mn/...`.
+- Confirm homepage and journal/partners pages behave the same way.
+
+---
+
+## Sequencing note
+This is a large multi-repo change. Recommend treating each phase as a hard checkpoint —
+confirm the backend is deployed/verified working (including running the migration
+script yourself) before starting Phase 2, and Phase 2 verified before Phase 3 — rather
+than implementing all three in one uninterrupted pass.
