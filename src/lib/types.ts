@@ -73,6 +73,9 @@ export interface Destination {
   cover_image?: Image
   images?: Image[]
   prices?: { min_people: number; max_people: number; price_usd: number }[]
+  // The tenant_users._id of whoever last created/updated this record via the
+  // admin panel. Absent if never touched by an authenticated tenant user.
+  lastEditedBy?: string
 }
 
 export interface Booking {
@@ -86,6 +89,10 @@ export interface Booking {
   payment_status?: string
   notes?: string
   created_at?: string
+  // The tenant_users._id of the admin who last changed this booking's
+  // status. Absent until an admin acts on it — bookings start out as public,
+  // unauthenticated customer submissions.
+  lastEditedBy?: string
 }
 
 export interface Car {
@@ -98,6 +105,9 @@ export interface Car {
   price_per_day_usd?: number
   tags?: string[]
   cover_image?: Image
+  // The tenant_users._id of whoever last created/updated this record via the
+  // admin panel. Absent if never touched by an authenticated tenant user.
+  lastEditedBy?: string
 }
 
 export interface Rental {
@@ -111,6 +121,10 @@ export interface Rental {
   status: string
   confirmation_id?: string
   created_at?: string
+  // The tenant_users._id of the admin who last changed this rental's
+  // status. Absent until an admin acts on it — rentals start out as public,
+  // unauthenticated customer submissions.
+  lastEditedBy?: string
 }
 
 export interface AirportTransfer {
@@ -124,6 +138,10 @@ export interface AirportTransfer {
   status: string
   confirmation_id?: string
   created_at?: string
+  // The tenant_users._id of the admin who last changed this transfer's
+  // status. Absent until an admin acts on it — transfers start out as public,
+  // unauthenticated customer submissions.
+  lastEditedBy?: string
 }
 
 export interface Blog {
@@ -140,6 +158,9 @@ export interface Blog {
   status: string
   tags?: string[]
   cover_image?: Image
+  // The tenant_users._id of whoever last created/updated this record via the
+  // admin panel. Absent if never touched by an authenticated tenant user.
+  lastEditedBy?: string
 }
 
 export interface PartnerProduct {
@@ -162,6 +183,9 @@ export interface Partner {
   related_review?: string
   is_active?: boolean
   created_at?: string
+  // The tenant_users._id of whoever last created/updated this record via the
+  // admin panel. Absent if never touched by an authenticated tenant user.
+  lastEditedBy?: string
 }
 
 export interface Review {
@@ -182,6 +206,10 @@ export interface ContactMessage {
   message: string
   status: string
   created_at?: string
+  // The tenant_users._id of the admin who last changed this message's
+  // status. Absent until an admin acts on it — messages start out as public,
+  // unauthenticated visitor submissions.
+  lastEditedBy?: string
 }
 
 export interface TenantUser {

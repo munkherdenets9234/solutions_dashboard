@@ -19,6 +19,7 @@ export default async function ToursPage({ searchParams }: { searchParams: Promis
     { header: 'Region', render: (d) => d.region ?? '—' },
     { header: 'Duration', render: (d) => (d.duration_days ? `${d.duration_days} days` : '—') },
     { header: 'Status', render: (d) => <StatusBadge status={d.featured ? 'featured' : 'active'} /> },
+    { header: 'Last edited by', render: (d) => d.lastEditedBy ?? '—' },
     {
       header: '',
       align: 'right',

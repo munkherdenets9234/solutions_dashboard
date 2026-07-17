@@ -85,6 +85,7 @@ export default async function BookingsPage({
     { header: 'Tour', render: (b) => destinationNames[b.destination_id] ?? b.destination_id },
     { header: 'Date', render: (b) => new Date(b.travel_dates.start).toLocaleDateString() },
     { header: 'Status', render: (b) => <StatusBadge status={b.status} /> },
+    { header: 'Last updated by', render: (b) => b.lastEditedBy ?? '—' },
     { header: 'Amount', align: 'right', render: (b) => `$${b.total_price_usd.toLocaleString()}` },
   ]
 

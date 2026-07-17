@@ -4,6 +4,7 @@ import { updateBlogAction, publishBlogAction } from '../../actions'
 import { BlogForm } from '@/components/admin/BlogForm'
 import { buttonClass } from '@/components/admin/form'
 import { StatusBadge } from '@/components/admin/StatusBadge'
+import { LastEditedBy } from '@/components/admin/LastEditedBy'
 import { ApiError } from '@/lib/api/client'
 import { localeText } from '@/lib/types'
 
@@ -36,6 +37,7 @@ export default async function EditBlogPage({
         <div>
           <h1 className="text-[26px] font-extrabold tracking-tight">Edit post</h1>
           <p className="text-[13px] text-body mt-1">{localeText(blog.title)}</p>
+          <LastEditedBy lastEditedBy={blog.lastEditedBy} />
         </div>
         <div className="flex items-center gap-3">
           <StatusBadge status={blog.status} />

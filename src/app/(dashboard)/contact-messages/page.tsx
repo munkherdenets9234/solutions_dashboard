@@ -33,6 +33,7 @@ export default async function ContactMessagesPage({ searchParams }: { searchPara
     { header: 'Subject', render: (m) => m.subject },
     { header: 'Message', render: (m) => <span className="line-clamp-2 text-body">{m.message}</span> },
     { header: 'Status', render: (m) => <StatusBadge status={m.status} /> },
+    { header: 'Handled by', render: (m) => m.lastEditedBy ?? '—' },
     {
       header: '',
       align: 'right',

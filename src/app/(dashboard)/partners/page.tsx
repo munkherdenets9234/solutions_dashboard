@@ -18,6 +18,7 @@ export default async function PartnersPage({ searchParams }: { searchParams: Pro
     { header: 'Tag', render: (p) => p.tag ?? '—' },
     { header: 'Title', render: (p) => localeText(p.title) || '—' },
     { header: 'Products', render: (p) => p.products?.length ?? 0 },
+    { header: 'Last edited by', render: (p) => p.lastEditedBy ?? '—' },
     {
       header: '',
       align: 'right',

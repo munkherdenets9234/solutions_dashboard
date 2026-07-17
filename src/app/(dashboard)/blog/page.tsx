@@ -19,6 +19,7 @@ export default async function BlogPage({ searchParams }: { searchParams: Promise
     { header: 'Category', render: (b) => b.category ?? '—' },
     { header: 'Date', render: (b) => b.date ?? '—' },
     { header: 'Status', render: (b) => <StatusBadge status={b.status} /> },
+    { header: 'Last edited by', render: (b) => (b.lastEditedBy ?? '—') },
     {
       header: '',
       align: 'right',

@@ -4,6 +4,7 @@ import { buildReviewOptions } from '@/lib/data/reviews'
 import { updatePartnerAction, deletePartnerAction } from '../../actions'
 import { PartnerForm } from '@/components/admin/PartnerForm'
 import { secondaryButtonClass } from '@/components/admin/form'
+import { LastEditedBy } from '@/components/admin/LastEditedBy'
 import { ApiError } from '@/lib/api/client'
 
 export default async function EditPartnerPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -27,6 +28,7 @@ export default async function EditPartnerPage({ params }: { params: Promise<{ sl
         <div>
           <h1 className="text-[26px] font-extrabold tracking-tight">Edit partner</h1>
           <p className="text-[13px] text-body mt-1">{partner.name}</p>
+          <LastEditedBy lastEditedBy={partner.lastEditedBy} />
         </div>
         <form action={boundDelete}>
           <button type="submit" className={secondaryButtonClass}>

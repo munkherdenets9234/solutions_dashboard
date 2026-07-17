@@ -3,6 +3,7 @@ import { getCarBySlug } from '@/lib/data/cars'
 import { updateCarAction, deleteCarAction } from '../../actions'
 import { CarForm } from '@/components/admin/CarForm'
 import { secondaryButtonClass } from '@/components/admin/form'
+import { LastEditedBy } from '@/components/admin/LastEditedBy'
 import { ApiError } from '@/lib/api/client'
 
 export default async function EditCarPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -25,6 +26,7 @@ export default async function EditCarPage({ params }: { params: Promise<{ slug: 
         <div>
           <h1 className="text-[26px] font-extrabold tracking-tight">Edit car</h1>
           <p className="text-[13px] text-body mt-1">{car.name}</p>
+          <LastEditedBy lastEditedBy={car.lastEditedBy} />
         </div>
         <form action={boundDelete}>
           <button type="submit" className={secondaryButtonClass}>

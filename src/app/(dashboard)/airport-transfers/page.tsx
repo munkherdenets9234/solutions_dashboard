@@ -28,6 +28,7 @@ export default async function AirportTransfersPage({ searchParams }: { searchPar
     { header: 'Flight', render: (t) => t.flight_number || '—' },
     { header: 'Arrival', render: (t) => new Date(t.arrival_at).toLocaleString() },
     { header: 'Status', render: (t) => <StatusBadge status={t.status} /> },
+    { header: 'Last updated by', render: (t) => t.lastEditedBy ?? '—' },
   ]
 
   return (

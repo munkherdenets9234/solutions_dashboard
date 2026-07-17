@@ -60,6 +60,7 @@ export default async function RentalDetailPage({ params }: { params: Promise<{ i
         <Field label="Mode" value={capitalizeWords(rental.mode.replace('_', ' '))} />
         <Field label="Pickup" value={new Date(rental.pickup_date).toLocaleString()} />
         <Field label="Return" value={new Date(rental.return_date).toLocaleString()} />
+        <Field label="Last updated by" value={rental.lastEditedBy ?? '—'} />
         {rental.confirmation_id ? <Field label="Confirmation ID" value={rental.confirmation_id} mono /> : null}
         {rental.notes ? <Field label="Notes" value={rental.notes} full /> : null}
       </div>

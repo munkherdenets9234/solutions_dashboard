@@ -59,6 +59,7 @@ export default async function AirportTransferDetailPage({ params }: { params: Pr
         <Field label="Flight number" value={transfer.flight_number || '—'} />
         <Field label="Passengers" value={String(transfer.passengers)} />
         <Field label="Arrival" value={new Date(transfer.arrival_at).toLocaleString()} />
+        <Field label="Last updated by" value={transfer.lastEditedBy ?? '—'} />
         {transfer.confirmation_id ? <Field label="Confirmation ID" value={transfer.confirmation_id} mono /> : null}
         {transfer.notes ? <Field label="Notes" value={transfer.notes} full /> : null}
       </div>

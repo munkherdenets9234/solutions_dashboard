@@ -3,6 +3,7 @@ import { getDestinationBySlug } from '@/lib/data/destinations'
 import { updateDestinationAction, deleteDestinationAction } from '../../actions'
 import { DestinationForm } from '@/components/admin/DestinationForm'
 import { secondaryButtonClass } from '@/components/admin/form'
+import { LastEditedBy } from '@/components/admin/LastEditedBy'
 import { ApiError } from '@/lib/api/client'
 
 export default async function EditTourPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -25,6 +26,7 @@ export default async function EditTourPage({ params }: { params: Promise<{ slug:
         <div>
           <h1 className="text-[26px] font-extrabold tracking-tight">Edit tour</h1>
           <p className="text-[13px] text-body mt-1">{destination.name}</p>
+          <LastEditedBy lastEditedBy={destination.lastEditedBy} />
         </div>
         <form action={boundDelete}>
           <button type="submit" className={secondaryButtonClass}>

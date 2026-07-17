@@ -20,10 +20,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
     throw err
   }
 
-  const [destinations, customer] = await Promise.all([
-    buildDestinationMap(100),
-    tryGetCustomer(booking.customer_id),
-  ])
+  const [destinations, customer] = await Promise.all([buildDestinationMap(100), tryGetCustomer(booking.customer_id)])
   const destination = destinations[booking.destination_id]
   const tourName = destination?.name ?? booking.destination_id
 
@@ -84,6 +81,7 @@ export default async function BookingDetailPage({ params }: { params: Promise<{ 
         <Field label="Booking ID" value={booking.id} mono />
         {booking.created_at ? <Field label="Booked on" value={new Date(booking.created_at).toLocaleString()} /> : null}
         <Field label="Status" value={<StatusBadge status={booking.status} />} />
+        <Field label="Last updated by" value={booking.lastEditedBy ?? '—'} />
         <Field label="Payment status" value={booking.payment_status || '—'} />
         <Field label="Total price" value={`$${booking.total_price_usd.toLocaleString()}`} />
         <Field

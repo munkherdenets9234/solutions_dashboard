@@ -18,6 +18,7 @@ export default async function CarsPage({ searchParams }: { searchParams: Promise
     { header: 'Type', render: (c) => c.type ?? '—' },
     { header: 'Seats', render: (c) => c.seats ?? '—' },
     { header: 'Price/day', align: 'right', render: (c) => (c.price_per_day_usd != null ? `$${c.price_per_day_usd}` : '—') },
+    { header: 'Last edited by', render: (c) => c.lastEditedBy ?? '—' },
     {
       header: '',
       align: 'right',

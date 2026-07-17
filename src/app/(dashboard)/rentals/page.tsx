@@ -32,6 +32,7 @@ export default async function RentalsPage({ searchParams }: { searchParams: Prom
     { header: 'Mode', render: (r) => <span className="capitalize">{r.mode.replace('_', ' ')}</span> },
     { header: 'Pickup', render: (r) => new Date(r.pickup_date).toLocaleDateString() },
     { header: 'Status', render: (r) => <StatusBadge status={r.status} /> },
+    { header: 'Last updated by', render: (r) => r.lastEditedBy ?? '—' },
   ]
 
   return (
