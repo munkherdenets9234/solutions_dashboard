@@ -26,6 +26,7 @@ export const NAV_SECTIONS: NavSection[] = [
       { href: '/partners', label: 'Partners' },
       { href: '/reviews', label: 'Reviews' },
       { href: '/contact-messages', label: 'Contact Messages' },
+      { href: '/newsletter', label: 'Newsletter' },
     ],
   },
   {

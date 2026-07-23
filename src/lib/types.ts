@@ -212,6 +212,12 @@ export interface ContactMessage {
   lastEditedBy?: string
 }
 
+export interface NewsletterSubscriber {
+  id: string
+  email: string
+  created_at?: string
+}
+
 export interface TenantUser {
   id: string
   name: string
