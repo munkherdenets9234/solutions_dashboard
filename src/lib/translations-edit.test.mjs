@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { entryKind, entryKeys, matchesKind, cleanValue, serialize } from './translations-edit.mjs'
+import { entryKind, entryKeys, isIdentifierKey, matchesKind, cleanValue, serialize } from './translations-edit.mjs'
 
 const L = ['en', 'mn', 'ko']
 
@@ -42,4 +42,30 @@ test('rows keep their own kind after others are removed (no index drift)', () =>
     { path: 'b', values: { en: ['k'] } },
     { path: 'c', values: { en: 'v' } },
   ])
+})
+
+test('only key, id and icon are identifier fields', () => {
+  for (const k of ['key', 'id', 'icon']) assert.equal(isIdentifierKey(k), true, k)
+  for (const k of ['title', 'Key', 'keys', 'iconName', 'identifier', '']) assert.equal(isIdentifierKey(k), false, k)
+})
+
+test('a populated object list round-trips unchanged through load and serialize', () => {
+  const values = {
+    en: [
+      { key: 'tours', icon: 'map', label: 'Tours', body: 'Guided tours' },
+      { key: 'camps', icon: 'tent', label: 'Camps', body: 'Ger camps' },
+    ],
+    mn: [
+      { key: 'tours', icon: 'map', label: 'Аялал', body: 'Хөтөчтэй аялал' },
+      { key: 'camps', icon: 'tent', label: 'Бааз', body: 'Гэр бааз' },
+    ],
+    ko: [
+      { key: 'tours', icon: 'map', label: '투어', body: '가이드 투어' },
+      { key: 'camps', icon: 'tent', label: '캠프', body: '게르 캠프' },
+    ],
+  }
+  const row = { path: 'about.stats', kind: entryKind(values, L), keys: entryKeys(values, L), values }
+  assert.equal(row.kind, 'objects')
+  assert.deepEqual(row.keys, ['key', 'icon', 'label', 'body'])
+  assert.deepEqual(serialize([row], L), [{ path: 'about.stats', values }])
 })

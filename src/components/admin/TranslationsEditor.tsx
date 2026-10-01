@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react'
 import type { TranslationsFormState } from '@/app/(dashboard)/translations/actions'
 import { LOCALES, type Locale, type TranslationEntry, type TranslationValue } from '@/lib/types'
-import { entryKeys, entryKind, matchesKind, serialize, type TranslationKind } from '@/lib/translations-edit.mjs'
+import { entryKeys, entryKind, isIdentifierKey, matchesKind, serialize, type TranslationKind } from '@/lib/translations-edit.mjs'
 import { inputClass, textareaClass, labelClass, buttonClass, secondaryButtonClass, errorClass } from './form'
 
 type Values = Partial<Record<Locale, TranslationValue>>
@@ -84,9 +84,21 @@ function StringListCell({ items, onChange }: { items: string[]; onChange: (items
   )
 }
 
+// Items added with "+ Add item" in this session. Identifier fields (key, id,
+// icon) are read-only on stored items but typeable here, so a new item is
+// usable. Keyed by object identity; update() carries the mark to the copy.
+const addedItems = new WeakSet<Item>()
+
 function ObjectListCell({ items, keys, onChange }: { items: Item[]; keys: string[]; onChange: (items: Item[]) => void }) {
   function update(i: number, key: string, value: string) {
-    onChange(items.map((it, idx) => (idx === i ? { ...it, [key]: value } : it)))
+    onChange(
+      items.map((it, idx) => {
+        if (idx !== i) return it
+        const next = { ...it, [key]: value }
+        if (addedItems.has(it)) addedItems.add(next)
+        return next
+      }),
+    )
   }
   return (
     <div className="flex flex-col gap-2">
@@ -106,19 +118,35 @@ function ObjectListCell({ items, keys, onChange }: { items: Item[]; keys: string
               </button>
             </div>
           </div>
-          {keys.map((key) => (
-            <label key={key} className="flex flex-col gap-1">
-              <span className={labelClass}>{key}</span>
-              <input type="text" value={item[key] ?? ''} onChange={(e) => update(i, key, e.target.value)} className={inputClass} />
-            </label>
-          ))}
+          {keys.map((key) => {
+            const locked = isIdentifierKey(key) && !addedItems.has(item)
+            return (
+              <label key={key} className="flex flex-col gap-1">
+                <span className={labelClass}>
+                  {key}
+                  {locked && <span className="ml-2 text-[11px] font-normal text-muted">identifier — change in code</span>}
+                </span>
+                <input
+                  type="text"
+                  value={item[key] ?? ''}
+                  readOnly={locked}
+                  onChange={(e) => update(i, key, e.target.value)}
+                  className={locked ? `${inputClass} opacity-60 cursor-not-allowed` : inputClass}
+                />
+              </label>
+            )
+          })}
         </div>
       ))}
       <div>
         <button
           type="button"
           className={secondaryButtonClass}
-          onClick={() => onChange([...items, Object.fromEntries(keys.map((k) => [k, '']))])}
+          onClick={() => {
+            const fresh: Item = Object.fromEntries(keys.map((k) => [k, '']))
+            addedItems.add(fresh)
+            onChange([...items, fresh])
+          }}
         >
           + Add item
         </button>

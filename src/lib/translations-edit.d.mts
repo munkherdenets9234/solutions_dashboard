@@ -6,6 +6,7 @@ type Values = Partial<Record<Locale, TranslationValue>>
 export function kindOf(value: TranslationValue | undefined): TranslationKind | undefined
 export function entryKind(values: Values, locales: Locale[]): TranslationKind
 export function entryKeys(values: Values, locales: Locale[]): string[]
+export function isIdentifierKey(key: string): boolean
 export function matchesKind(kind: TranslationKind, value: TranslationValue | undefined): boolean
 export function cleanValue(kind: TranslationKind, value: TranslationValue | undefined): TranslationValue | undefined
 export function serialize(

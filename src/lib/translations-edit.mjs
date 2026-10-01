@@ -34,6 +34,13 @@ export function entryKeys(values, locales) {
   return keys
 }
 
+// Object fields that drive logic on the site (a lookup key, an icon name, an
+// anchor id). Editing them in the admin silently breaks the page, so the editor
+// shows them read-only on stored items.
+export function isIdentifierKey(key) {
+  return key === 'key' || key === 'id' || key === 'icon'
+}
+
 // True when the stored value can be edited by the entry's editor.
 export function matchesKind(kind, value) {
   if (value === undefined || value === null) return true
