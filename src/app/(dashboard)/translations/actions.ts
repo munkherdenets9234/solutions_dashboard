@@ -33,7 +33,7 @@ export async function saveTranslationsAction(
       token
     )
     revalidatePath('/translations')
-    revalidatePath('/translations/' + page)
+    revalidatePath('/translations/' + encodeURIComponent(page))
     return { saved: res.data.entries }
   } catch (err) {
     return { error: err instanceof ApiError ? err.message : 'Failed to save the wording.' }

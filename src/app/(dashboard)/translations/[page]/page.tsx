@@ -8,7 +8,12 @@ import { safeLoad } from '@/lib/api/safe'
 
 export default async function TranslationsPageEditor({ params }: { params: Promise<{ page: string }> }) {
   const { page: rawPage } = await params
-  const page = decodeURIComponent(rawPage)
+  let page = rawPage
+  try {
+    page = decodeURIComponent(rawPage)
+  } catch {
+    // keep the raw segment; the API will answer for it
+  }
   const token = await requireToken()
   const result = await safeLoad(() => getTranslationPage(page, token))
   if (!result.ok) return <ErrorNotice message={result.message} />

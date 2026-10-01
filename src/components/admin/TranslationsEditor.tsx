@@ -1,13 +1,21 @@
 'use client'
 
-import { useActionState, useMemo, useState } from 'react'
+import { useActionState, useState } from 'react'
 import type { TranslationsFormState } from '@/app/(dashboard)/translations/actions'
 import { LOCALES, type Locale, type TranslationEntry, type TranslationValue } from '@/lib/types'
+import { entryKeys, entryKind, matchesKind, serialize, type TranslationKind } from '@/lib/translations-edit.mjs'
 import { inputClass, textareaClass, labelClass, buttonClass, secondaryButtonClass, errorClass } from './form'
 
-type Kind = 'string' | 'strings' | 'objects'
 type Values = Partial<Record<Locale, TranslationValue>>
 type Item = Record<string, string>
+// Kind and keys are fixed per row when the editor mounts and travel with the
+// row, so a re-render with fresh server data can never misalign them.
+interface Row {
+  path: string
+  values: Values
+  kind: TranslationKind
+  keys: string[]
+}
 
 const localeLabel: Record<Locale, string> = { en: 'EN', mn: 'MN', ko: 'KO' }
 
@@ -16,28 +24,13 @@ const localeLabel: Record<Locale, string> = { en: 'EN', mn: 'MN', ko: 'KO' }
 const MAX_ENTRIES = 1000
 const MAX_BODY_BYTES = 512 * 1024
 
-function kindOf(value: TranslationValue | undefined): Kind | undefined {
-  if (typeof value === 'string') return 'string'
-  if (Array.isArray(value) && value.length > 0) return typeof value[0] === 'string' ? 'strings' : 'objects'
-  return undefined
-}
-
-// An entry's shape is set by the first language that has a non-empty value.
-function entryKind(values: Values): Kind {
-  for (const locale of LOCALES) {
-    const k = kindOf(values[locale])
-    if (k) return k
-  }
-  return 'string'
-}
-
-// Keys of an object list come from the first item that exists in any language.
-function entryKeys(values: Values): string[] {
-  for (const locale of LOCALES) {
-    const v = values[locale]
-    if (Array.isArray(v) && v.length > 0 && typeof v[0] === 'object') return Object.keys(v[0])
-  }
-  return []
+function toRows(entries: TranslationEntry[]): Row[] {
+  return entries.map((e) => ({
+    path: e.path,
+    values: e.values,
+    kind: entryKind(e.values, LOCALES),
+    keys: entryKeys(e.values, LOCALES),
+  }))
 }
 
 function asStrings(v: TranslationValue | undefined): string[] {
@@ -46,33 +39,6 @@ function asStrings(v: TranslationValue | undefined): string[] {
 
 function asItems(v: TranslationValue | undefined): Item[] {
   return Array.isArray(v) ? v.filter((x): x is Item => typeof x === 'object' && x !== null) : []
-}
-
-// Returns the value to send, or undefined when the language is blank (the
-// server drops blank languages, so they are simply not sent).
-function cleanValue(kind: Kind, v: TranslationValue | undefined): TranslationValue | undefined {
-  if (kind === 'string') {
-    return typeof v === 'string' && v.trim() !== '' ? v : undefined
-  }
-  if (kind === 'strings') {
-    const items = asStrings(v).filter((s) => s.trim() !== '')
-    return items.length > 0 ? items : undefined
-  }
-  const items = asItems(v).filter((it) => Object.values(it).some((s) => String(s).trim() !== ''))
-  return items.length > 0 ? items : undefined
-}
-
-function serialize(entries: TranslationEntry[], kinds: Kind[]): TranslationEntry[] {
-  const out: TranslationEntry[] = []
-  entries.forEach((entry, i) => {
-    const values: Values = {}
-    for (const locale of LOCALES) {
-      const v = cleanValue(kinds[i], entry.values[locale])
-      if (v !== undefined) values[locale] = v
-    }
-    if (Object.keys(values).length > 0) out.push({ path: entry.path, values })
-  })
-  return out
 }
 
 function move<T>(list: T[], i: number, dir: -1 | 1): T[] {
@@ -168,21 +134,17 @@ export function TranslationsEditor({
   action: (prev: TranslationsFormState, formData: FormData) => Promise<TranslationsFormState>
   initialEntries: TranslationEntry[]
 }) {
-  const [entries, setEntries] = useState<TranslationEntry[]>(initialEntries)
+  const [rows, setRows] = useState<Row[]>(() => toRows(initialEntries))
   const [state, formAction, pending] = useActionState(action, {})
 
-  // Shapes are fixed from what was loaded, so clearing a field never changes
-  // which editor the row uses.
-  const kinds = useMemo(() => initialEntries.map((e) => entryKind(e.values)), [initialEntries])
-  const keys = useMemo(() => initialEntries.map((e) => entryKeys(e.values)), [initialEntries])
-
   function setValue(i: number, locale: Locale, value: TranslationValue) {
-    setEntries((prev) => prev.map((e, idx) => (idx === i ? { ...e, values: { ...e.values, [locale]: value } } : e)))
+    setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, values: { ...r.values, [locale]: value } } : r)))
   }
 
-  const json = JSON.stringify(serialize(entries, kinds))
-  const tooMany = entries.length > MAX_ENTRIES
-  const tooBig = new Blob([json]).size > MAX_BODY_BYTES
+  const payload = serialize(rows, LOCALES)
+  const json = JSON.stringify(payload)
+  const tooMany = payload.length > MAX_ENTRIES
+  const tooBig = new Blob([JSON.stringify({ entries: payload })]).size > MAX_BODY_BYTES
   const blocked = tooMany || tooBig
 
   return (
@@ -199,7 +161,7 @@ export function TranslationsEditor({
       </div>
 
       <div className="flex flex-col gap-3">
-        {entries.map((entry, i) => (
+        {rows.map((entry, i) => (
           <div
             key={entry.path}
             className="grid grid-cols-1 md:grid-cols-[180px_repeat(3,minmax(0,1fr))] gap-3 border border-hairline rounded-[10px] bg-panel p-3"
@@ -207,20 +169,30 @@ export function TranslationsEditor({
             <div className="text-xs font-semibold text-body break-all pt-1">{entry.path}</div>
             {LOCALES.map((locale) => {
               const v = entry.values[locale]
+              if (!matchesKind(entry.kind, v)) {
+                return (
+                  <div key={locale} className="flex flex-col gap-1 min-w-0">
+                    <span className="md:hidden text-[11px] font-semibold text-muted uppercase">{localeLabel[locale]}</span>
+                    <p className="text-xs text-muted border border-hairline rounded-md px-3 py-2">
+                      Unsupported shape, kept as is.
+                    </p>
+                  </div>
+                )
+              }
               return (
                 <div key={locale} className="flex flex-col gap-1 min-w-0">
                   <span className="md:hidden text-[11px] font-semibold text-muted uppercase">{localeLabel[locale]}</span>
-                  {kinds[i] === 'string' ? (
+                  {entry.kind === 'string' ? (
                     <textarea
                       rows={3}
                       value={typeof v === 'string' ? v : ''}
                       onChange={(e) => setValue(i, locale, e.target.value)}
                       className={textareaClass}
                     />
-                  ) : kinds[i] === 'strings' ? (
+                  ) : entry.kind === 'strings' ? (
                     <StringListCell items={asStrings(v)} onChange={(items) => setValue(i, locale, items)} />
                   ) : (
-                    <ObjectListCell items={asItems(v)} keys={keys[i]} onChange={(items) => setValue(i, locale, items)} />
+                    <ObjectListCell items={asItems(v)} keys={entry.keys} onChange={(items) => setValue(i, locale, items)} />
                   )}
                 </div>
               )
