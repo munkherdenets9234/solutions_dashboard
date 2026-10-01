@@ -251,3 +251,18 @@ export interface CustomerDetail extends CustomerBase {
   rentals: Rental[]
   airport_transfers: AirportTransfer[]
 }
+
+// Site wording managed on the Translations page. A value is a string, a list
+// of strings, or a list of flat objects with string fields, per language.
+export type TranslationValue = string | string[] | Record<string, string>[]
+
+export interface TranslationEntry {
+  path: string
+  values: Partial<Record<Locale, TranslationValue>>
+}
+
+export interface TranslationPageSummary {
+  page: string
+  entries: number
+  updated_at: string
+}
