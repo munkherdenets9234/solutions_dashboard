@@ -3,6 +3,11 @@ import type { NextRequest } from 'next/server'
 
 const COOKIE_NAME = 'admin_session'
 
+// Pages reachable without a session. /forgot-password has to be: someone who
+// has forgotten their password has none, and without this entry it would
+// redirect to /login before the page could render.
+const PUBLIC_PATHS = new Set(['/login', '/forgot-password'])
+
 // Presence-only check: is there a session cookie at all? The backend is the
 // real authority — every API call still carries the token and gets a 401 if
 // it's invalid or expired, which callers handle by redirecting to /login.
@@ -10,7 +15,7 @@ export function proxy(request: NextRequest) {
   const hasSession = request.cookies.has(COOKIE_NAME)
   const { pathname } = request.nextUrl
 
-  if (!hasSession && pathname !== '/login') {
+  if (!hasSession && !PUBLIC_PATHS.has(pathname)) {
     const url = new URL('/login', request.url)
     url.searchParams.set('from', pathname)
     return NextResponse.redirect(url)
