@@ -69,3 +69,49 @@ test('a populated object list round-trips unchanged through load and serialize',
   assert.deepEqual(row.keys, ['key', 'icon', 'label', 'body'])
   assert.deepEqual(serialize([row], L), [{ path: 'about.stats', values }])
 })
+
+
+test('serialize keeps base unchanged', () => {
+  const base = { mn: 'Сайн', en: 'Hi' }
+  const out = serialize([{ path: 'a', kind: 'string', values: { en: 'Hello' }, base }], L)
+  assert.deepEqual(out, [{ path: 'a', values: { en: 'Hello' }, base: { mn: 'Сайн', en: 'Hi' } }])
+  assert.deepEqual(Object.keys(out[0].base), ['mn', 'en'])
+  assert.equal(out[0].base, base)
+})
+
+test('serialize omits base when the row has none', () => {
+  const out = serialize(
+    [
+      { path: 'a', kind: 'string', values: { en: 'x' } },
+      { path: 'b', kind: 'string', values: { en: 'y' }, base: {} },
+    ],
+    L,
+  )
+  assert.deepEqual(out, [
+    { path: 'a', values: { en: 'x' } },
+    { path: 'b', values: { en: 'y' } },
+  ])
+  for (const o of out) assert.equal('base' in o, false)
+})
+
+test('serialize drops base with an entry that is blank in every language', () => {
+  const out = serialize([{ path: 'a', kind: 'string', values: { en: '  ' }, base: { en: 'Hi' } }], L)
+  assert.deepEqual(out, [])
+})
+
+test('serialize keeps base for a language whose value was blanked', () => {
+  const out = serialize([{ path: 'a', kind: 'string', values: { en: 'Hello', mn: '' }, base: { en: 'Hi', mn: 'Сайн' } }], L)
+  assert.deepEqual(out, [{ path: 'a', values: { en: 'Hello' }, base: { en: 'Hi', mn: 'Сайн' } }])
+})
+
+test('base survives load to serialize for string, strings and objects kinds', () => {
+  const entries = [
+    { path: 's', values: { en: 'a' }, base: { ko: 'k', en: 'b' } },
+    { path: 'l', values: { en: ['a', 'b'] }, base: { en: ['x', 'y'], mn: ['z'] } },
+    { path: 'o', values: { en: [{ id: '1', t: 'a' }] }, base: { en: [{ t: 'q', id: '1' }] } },
+  ]
+  const rows = entries.map((e) => ({ ...e, kind: entryKind(e.values, L), keys: entryKeys(e.values, L) }))
+  const out = serialize(rows, L)
+  assert.deepEqual(out, entries)
+  assert.equal(JSON.stringify(out), JSON.stringify(entries))
+})

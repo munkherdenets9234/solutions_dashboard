@@ -64,8 +64,9 @@ export function cleanValue(kind, value) {
   return items.length > 0 ? items : undefined
 }
 
-// rows: [{ path, kind, values }] -> [{ path, values }], blank languages and
-// fully blank paths omitted.
+// rows: [{ path, kind, values, base? }] -> [{ path, values, base? }], blank
+// languages and fully blank paths omitted. base is opaque: copied unchanged and
+// sent only with an entry that is sent.
 export function serialize(rows, locales) {
   const out = []
   for (const row of rows) {
@@ -74,7 +75,10 @@ export function serialize(rows, locales) {
       const v = cleanValue(row.kind, row.values[locale])
       if (v !== undefined) values[locale] = v
     }
-    if (Object.keys(values).length > 0) out.push({ path: row.path, values })
+    if (Object.keys(values).length === 0) continue
+    const entry = { path: row.path, values }
+    if (row.base && typeof row.base === 'object' && Object.keys(row.base).length > 0) entry.base = row.base
+    out.push(entry)
   }
   return out
 }

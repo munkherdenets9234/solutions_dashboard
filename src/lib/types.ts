@@ -259,6 +259,9 @@ export type TranslationValue = string | string[] | Record<string, string>[]
 export interface TranslationEntry {
   path: string
   values: Partial<Record<Locale, TranslationValue>>
+  // Snapshot of the default wording each language was edited against. Opaque:
+  // the editor sends it back exactly as loaded and never shows or edits it.
+  base?: Partial<Record<Locale, TranslationValue>>
 }
 
 export interface TranslationPageSummary {

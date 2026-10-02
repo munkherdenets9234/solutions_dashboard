@@ -10,6 +10,6 @@ export function isIdentifierKey(key: string): boolean
 export function matchesKind(kind: TranslationKind, value: TranslationValue | undefined): boolean
 export function cleanValue(kind: TranslationKind, value: TranslationValue | undefined): TranslationValue | undefined
 export function serialize(
-  rows: { path: string; kind: TranslationKind; values: Values }[],
+  rows: { path: string; kind: TranslationKind; values: Values; base?: Values }[],
   locales: Locale[]
-): { path: string; values: Values }[]
+): { path: string; values: Values; base?: Values }[]

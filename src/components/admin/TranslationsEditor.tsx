@@ -15,6 +15,8 @@ interface Row {
   values: Values
   kind: TranslationKind
   keys: string[]
+  // Opaque snapshot from the server, sent back unchanged. Never rendered.
+  base?: Values
 }
 
 const localeLabel: Record<Locale, string> = { en: 'EN', mn: 'MN', ko: 'KO' }
@@ -30,6 +32,7 @@ function toRows(entries: TranslationEntry[]): Row[] {
     values: e.values,
     kind: entryKind(e.values, LOCALES),
     keys: entryKeys(e.values, LOCALES),
+    ...(e.base ? { base: e.base } : {}),
   }))
 }
 
