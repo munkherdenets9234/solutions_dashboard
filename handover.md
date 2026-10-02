@@ -1,5 +1,20 @@
 # admin (travel agency admin) — handover (2026-10-01)
 
+## Update 2026-10-02 (latest; supersedes the "uncommitted" status above)
+
+- Branch `master`, clean, 6 commits unpushed. **Forgot-password page: committed (`ddce295`) and verified live** end to end (code arrives, reset works). The "Task 5 uncommitted / not clicked through" text above is out of date.
+- **System > Translations (new):** list of 37 pages and an editor (EN/MN/KO side by side; string, string-list and object-list editors; a blank language means the shipped wording). `src/app/(dashboard)/translations/`, `src/components/admin/TranslationsEditor.tsx`, pure helpers in `src/lib/translations-edit.mjs` with tests (`node --test src/lib/translations-edit.test.mjs`). Identifier fields named exactly `key`, `id`, `icon` are read-only on stored items. The editor loads each entry's `base` and sends it back untouched on save (`94385a9`); if an old build saves, `base` is dropped (safe; `--sync` in the E&S site repo re-attaches it).
+- Verified in the browser on 2026-10-02: list, editing a string, save, the public API shows it, reset drops it. Not exercised: adding/removing/reordering list items.
+- Checks: `npx tsc --noEmit` clean; `npx eslint src` has a **pre-existing** error in `(dashboard)/tours/page.tsx:39`, so lint only touched files. There is no `npm test`; adding a script to `package.json` trips the pre-commit `npm audit` hook.
+- E&S's subscription ends **2026-10-20**; after that saves return 402.
+
+- **Ports / how to start (2026-10-02):** tenantcore :8092, digitalservice :8080, travel admin :3001, inno dashboard :3011, carwash :8091, carwash-web :3002. The launch-config entry `eandstravelmongolia` serves 404 on every page (its `npm --prefix` form starts Next from the repo root): start the E&S site with `npm run dev -- -p 3000` from `eandstravelmongolia/`. Port 3000 may be another project; check the page title.
+- **Pushing is blocked from this machine:** GitHub answers `Permission denied (publickey)` for `~/.ssh/id_ed25519`. Nothing from the 2026-10-01/02 sessions was pushed except what the user pushed themselves (tenantcore `backend-update` was merged as PR #1). Unpushed at last check: digitalservice 13, E&S site 7, travel admin 6, inno admin 6, inno site 1, carwash 1, carwash-web 1.
+- **Production tenantcore** is `https://core-backend-5cjs.onrender.com`. Checked 2026-10-02: `/healthz` and `/readyz` 200, public API 200, admin routes 401 without a token, `POST /api/v1/admin/password-reset/request` is registered but answers **503** because `GMAIL_EMAIL`/`GMAIL_PASSWORD` are not set on Render (`/readyz` is `degraded`; `email` and `expiry_notice` are off). Set a Google **App Password** (16 lowercase letters) there, and `EXPIRY_NOTICE_EMAIL`.
+- **Inno dashboard production 404 on password reset:** `POST <host>/admin/password-reset/request` (no `/api/v1`) is 404 on production, which is exactly the dashboard's error. The dashboard's server-side `API_URL` on Vercel must be `https://core-backend-5cjs.onrender.com/api/v1` (and `NEXT_PUBLIC_API_URL` the same); redeploy after changing. Not confirmed: the Vercel settings could not be seen.
+- **Cancelled on 2026-10-02 (by the user, in tenantcore):** Nelson Travel and Bayan Bogd (Bayan Bogd is the tenant behind carwash/carwash-web). E&S Discovery Mongolia is still active and its subscription **ends 2026-10-20**: after that its writes (including saving translations) return 402 until renewed. Plan question still open: E&S is on `starter`, the assistant had set `travel-pro`; ask the user, change nothing unasked.
+- **Credentials:** the user typed a password in chat for sign-in during the session. It is stored nowhere. Suggest changing it. Never print `.env`.
+
 Work was **paused with uncommitted changes** because the session context was filling. The code typechecks and lints; it has **not been clicked through in a browser** and is **not committed**.
 
 - Branch: `master`. Last commit: `803bdd6  some change` (nothing from this session is committed here).
