@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { guideLabel, guideValues } from './guide-labels.mjs'
+import { guideLabel, guideValues, monthName } from './guide-labels.mjs'
 
 const ENUMS = {
   status: ['new', 'reviewing', 'shortlisted', 'rejected', 'hired'],
@@ -38,4 +38,11 @@ test('guideValues returns the keys in order, [] for unknown group', () => {
   assert.deepEqual(guideValues('status'), ENUMS.status)
   assert.deepEqual(guideValues('region'), ['gobi', 'central', 'khuvsgul', 'western', 'eastern', 'ulaanbaatar_terelj', 'other'])
   assert.deepEqual(guideValues('nogroup'), [])
+})
+
+test('monthName maps 1-12 to names, passes others through', () => {
+  assert.equal(monthName(1), 'January')
+  assert.equal(monthName(12), 'December')
+  assert.equal(monthName(0), '0')
+  assert.equal(monthName(13), '13')
 })

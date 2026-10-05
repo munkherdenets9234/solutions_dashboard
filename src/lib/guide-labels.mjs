@@ -32,3 +32,10 @@ export function guideLabel(group, value) {
 export function guideValues(group) {
   return Object.hasOwn(LABELS, group) ? Object.keys(LABELS[group]) : []
 }
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+// 1-12 -> month name; anything else is returned as a string unchanged.
+export function monthName(n) {
+  return Number.isInteger(n) && n >= 1 && n <= 12 ? MONTHS[n - 1] : String(n)
+}

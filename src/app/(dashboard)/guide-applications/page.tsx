@@ -4,6 +4,7 @@ import { listGuideApplications, guideCounts } from '@/lib/data/guide-application
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { ErrorNotice } from '@/components/admin/ErrorNotice'
+import { formatDate } from '@/lib/format'
 import { safeLoad } from '@/lib/api/safe'
 import { guideLabel, guideValues } from '@/lib/guide-labels.mjs'
 import type { GuideApplication, GuideLanguage } from '@/lib/types'
@@ -20,11 +21,6 @@ function first(v: string | string[] | undefined): string | undefined {
 }
 
 const MAX_PAGE = 10_000
-
-function formatDate(iso: string): string {
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString('en-US', { timeZone: 'Asia/Ulaanbaatar' })
-}
 
 function languageSummary(languages: GuideLanguage[]): string {
   return languages

@@ -1,4 +1,5 @@
 import { apiGet } from '@/lib/api/client'
+import { assertGuideId } from '@/lib/guide-ids.mjs'
 import type { GuideApplication, GuideCounts, GuideFileLink } from '@/lib/types'
 
 export interface GuideListParams {
@@ -18,7 +19,8 @@ export async function listGuideApplications(token: string, params: GuideListPara
 }
 
 export async function getGuideApplication(token: string, id: string) {
-  const res = await apiGet<GuideApplication>(`/admin/guide-applications/${encodeURIComponent(id)}`, undefined, token)
+  const safeId = assertGuideId(id)
+  const res = await apiGet<GuideApplication>(`/admin/guide-applications/${safeId}`, undefined, token)
   return res.data
 }
 
@@ -28,8 +30,10 @@ export async function guideCounts(token: string): Promise<GuideCounts> {
 }
 
 export async function guideFileLink(token: string, id: string, fileId: string) {
+  const safeId = assertGuideId(id)
+  const safeFileId = assertGuideId(fileId)
   const res = await apiGet<GuideFileLink>(
-    `/admin/guide-applications/${encodeURIComponent(id)}/files/${encodeURIComponent(fileId)}`,
+    `/admin/guide-applications/${safeId}/files/${safeFileId}`,
     undefined,
     token
   )
