@@ -43,7 +43,12 @@ export default async function GuideApplicationDetailPage({ params }: { params: P
   const regions = app.regions ?? []
   const references = app.references ?? []
   const files = app.files ?? []
-  const events = [...(app.events ?? [])].sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime())
+  // Newest first; ties (and unparseable times) fall back to append order, latest first.
+  const ts = (at: string) => Date.parse(at) || 0
+  const events = (app.events ?? [])
+    .map((e, i) => ({ e, i }))
+    .sort((x, y) => ts(y.e.at) - ts(x.e.at) || y.i - x.i)
+    .map(({ e }) => e)
   const ex = app.experience
   const dr = app.driving
   const av = app.availability

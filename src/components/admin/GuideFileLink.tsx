@@ -20,7 +20,8 @@ export function GuideFileLink({ id, fileId, label, name, size }: Props) {
     startTransition(async () => {
       try {
         const { url } = await openGuideFileAction(id, fileId)
-        window.open(url, '_blank', 'noopener,noreferrer')
+        const w = window.open(url, '_blank', 'noopener,noreferrer')
+        if (!w) setError('Your browser blocked the new tab. Allow pop-ups for this site and try again.')
       } catch {
         setError('Could not open this file. Please try again.')
       }
