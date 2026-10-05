@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { guideLabel } from './guide-labels.mjs'
+import { guideLabel, guideValues } from './guide-labels.mjs'
 
 const ENUMS = {
   status: ['new', 'reviewing', 'shortlisted', 'rejected', 'hired'],
@@ -33,3 +33,9 @@ for (const [group, values] of Object.entries(ENUMS)) {
     }
   })
 }
+
+test('guideValues returns the keys in order, [] for unknown group', () => {
+  assert.deepEqual(guideValues('status'), ENUMS.status)
+  assert.deepEqual(guideValues('region'), ['gobi', 'central', 'khuvsgul', 'western', 'eastern', 'ulaanbaatar_terelj', 'other'])
+  assert.deepEqual(guideValues('nogroup'), [])
+})
