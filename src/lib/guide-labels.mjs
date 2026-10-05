@@ -27,3 +27,8 @@ export function guideLabel(group, value) {
   const g = Object.hasOwn(LABELS, group) ? LABELS[group] : undefined
   return g && Object.hasOwn(g, value) ? g[value] : value
 }
+
+// Allowed values of a label group, in display order (used to validate filters).
+export function guideValues(group) {
+  return Object.hasOwn(LABELS, group) ? Object.keys(LABELS[group]) : []
+}
