@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import { openSignedLink } from '@/lib/open-signed-link.mjs'
 import { openGuideFileAction } from '@/app/(dashboard)/guide-applications/actions'
 
 interface Props {
@@ -20,8 +21,7 @@ export function GuideFileLink({ id, fileId, label, name, size }: Props) {
     startTransition(async () => {
       try {
         const { url } = await openGuideFileAction(id, fileId)
-        const w = window.open(url, '_blank', 'noopener,noreferrer')
-        if (!w) setError('Your browser blocked the new tab. Allow pop-ups for this site and try again.')
+        if (openSignedLink(url, (u, t) => window.open(u, t)) === 'blocked') setError('Your browser blocked the new tab. Allow pop-ups for this site and try again.')
       } catch {
         setError('Could not open this file. Please try again.')
       }
