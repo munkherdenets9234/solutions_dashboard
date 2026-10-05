@@ -75,6 +75,10 @@ export function apiPut<T>(path: string, body: unknown, token?: string) {
   return request<T>(path, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, token)
 }
 
+export function apiPatch<T>(path: string, body: unknown, token?: string) {
+  return request<T>(path, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, token)
+}
+
 export function apiDelete<T>(path: string, token?: string) {
   return request<T>(path, { method: 'DELETE' }, token)
 }
