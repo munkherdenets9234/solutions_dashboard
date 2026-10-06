@@ -20,7 +20,7 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
     await login(email, password)
   } catch (err) {
     if (err instanceof ApiError) {
-      return { error: err.status === 401 ? 'Invalid email or password.' : err.message }
+      return { error: err.status === 401 ? 'Invalid email or password.' : 'Sign-in failed. Please try again.' }
     }
     return { error: 'Something went wrong. Please try again.' }
   }

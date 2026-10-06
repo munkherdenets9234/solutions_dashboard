@@ -14,9 +14,10 @@ export interface DataTableProps<T> {
   basePath?: string
   query?: Record<string, string | undefined>
   emptyMessage?: string
+  getRowHref?: (row: T) => string
 }
 
-export function DataTable<T>({ columns, rows, getRowKey, meta, basePath, query, emptyMessage }: DataTableProps<T>) {
+export function DataTable<T>({ columns, rows, getRowKey, meta, basePath, query, emptyMessage, getRowHref }: DataTableProps<T>) {
   const page = meta?.page ?? 1
   const limit = meta?.limit ?? rows.length
   const total = meta?.total ?? rows.length
@@ -50,19 +51,25 @@ export function DataTable<T>({ columns, rows, getRowKey, meta, basePath, query, 
       {rows.length === 0 ? (
         <div className="px-[18px] py-10 text-center text-sm text-muted">{emptyMessage ?? 'No records found.'}</div>
       ) : (
-        rows.map((row) => (
-          <div
-            key={getRowKey(row)}
-            className="grid px-[18px] py-3 border-b border-hairline-soft last:border-b-0 items-center"
-            style={{ gridTemplateColumns: columns.map(() => '1fr').join(' ') }}
-          >
-            {columns.map((col) => (
-              <div key={col.header} className={`text-[12.5px] ${col.align === 'right' ? 'text-right' : ''}`}>
-                {col.render(row)}
-              </div>
-            ))}
-          </div>
-        ))
+        rows.map((row) => {
+          const cells = columns.map((col) => (
+            <div key={col.header} className={`text-[12.5px] ${col.align === 'right' ? 'text-right' : ''}`}>
+              {col.render(row)}
+            </div>
+          ))
+          const rowClass = 'grid px-[18px] py-3 border-b border-hairline-soft last:border-b-0 items-center'
+          const rowStyle = { gridTemplateColumns: columns.map(() => '1fr').join(' ') }
+          const href = getRowHref?.(row)
+          return href ? (
+            <Link key={getRowKey(row)} href={href} className={`${rowClass} hover:bg-hairline-soft`} style={rowStyle}>
+              {cells}
+            </Link>
+          ) : (
+            <div key={getRowKey(row)} className={rowClass} style={rowStyle}>
+              {cells}
+            </div>
+          )
+        })
       )}
 
       {meta ? (

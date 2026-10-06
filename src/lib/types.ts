@@ -269,3 +269,110 @@ export interface TranslationPageSummary {
   entries: number
   updated_at: string
 }
+
+// Guide recruitment: mirrors internal/models/guide_application.go (snake_case
+// JSON). Files never carry a public_id; staff open them through short-lived
+// signed links.
+export type GuideStatus = 'new' | 'reviewing' | 'shortlisted' | 'rejected' | 'hired'
+
+export type GuideFileKind = 'photo' | 'id_card' | 'driver_license' | 'guide_certificate' | 'cv' | 'first_aid'
+
+export interface GuideEmergencyContact {
+  name: string
+  phone: string
+}
+
+export interface GuidePersonal {
+  full_name: string
+  nickname: string
+  birth_date: string
+  gender: string
+  phone: string
+  email: string
+  address: string
+  emergency_contact: GuideEmergencyContact
+}
+
+export interface GuideLanguage {
+  language: string
+  other_name?: string
+  level: string
+}
+
+export interface GuideExperience {
+  years: number
+  previous_companies: string
+  tour_types: string[]
+  main_directions: string
+  largest_group: number
+}
+
+export interface GuideDriving {
+  has_license: boolean
+  license_class: string
+  years_driving: number
+  can_drive_4x4: boolean
+  long_distance: boolean
+  has_own_vehicle: boolean
+  vehicles: string
+}
+
+export interface GuideAvailability {
+  months: number[]
+  days: string
+  trip_lengths: string[]
+  full_season: boolean
+  booked_trips: string
+}
+
+export interface GuideReference {
+  name: string
+  position: string
+  contact: string
+}
+
+export interface GuideFile {
+  id: string
+  kind: GuideFileKind
+  mime: string
+  size: number
+  original_name: string
+}
+
+export interface GuideEvent {
+  type: 'status' | 'note'
+  at: string
+  user_id?: string
+  user_name: string
+  from?: string
+  to?: string
+  text?: string
+}
+
+export interface GuideApplication {
+  id: string
+  tenant_id: string
+  season: string
+  locale: string
+  personal: GuidePersonal
+  languages: GuideLanguage[]
+  experience: GuideExperience
+  regions: string[]
+  regions_other: string
+  driving: GuideDriving
+  availability: GuideAvailability
+  references: GuideReference[]
+  files: GuideFile[]
+  status: GuideStatus
+  events: GuideEvent[]
+  consent_at: string
+  created_at: string
+  updated_at: string
+}
+
+export type GuideCounts = Record<GuideStatus, number>
+
+export interface GuideFileLink {
+  url: string
+  expires_at: string
+}
