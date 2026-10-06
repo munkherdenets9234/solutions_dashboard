@@ -113,7 +113,7 @@ export function CarForm({
               id="self_drive_from"
               name="self_drive_from"
               type="date"
-              defaultValue={defaultValues?.self_drive_from ?? ''}
+              defaultValue={defaultValues?.self_drive_from?.slice(0, 10) ?? ''}
               className={inputClass}
             />
           </div>
@@ -125,7 +125,7 @@ export function CarForm({
               id="self_drive_to"
               name="self_drive_to"
               type="date"
-              defaultValue={defaultValues?.self_drive_to ?? ''}
+              defaultValue={defaultValues?.self_drive_to?.slice(0, 10) ?? ''}
               className={inputClass}
             />
           </div>

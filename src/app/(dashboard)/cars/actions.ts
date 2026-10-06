@@ -11,10 +11,12 @@ export interface FormState {
   error?: string
 }
 
-// Sent as-is for the backend to validate; empty means no value.
+// The backend decodes these into time.Time on create, so send an RFC3339 UTC
+// midnight (literal suffix: no timezone shift). Empty means no value; the
+// backend validates the rest.
 function dateOrNull(value: FormDataEntryValue | null) {
   const s = String(value ?? '').trim()
-  return s || null
+  return s ? `${s}T00:00:00Z` : null
 }
 
 function bodyFromForm(formData: FormData) {
