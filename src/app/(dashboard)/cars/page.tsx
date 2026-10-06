@@ -3,6 +3,7 @@ import { listCars } from '@/lib/data/cars'
 import { DataTable, type Column } from '@/components/admin/DataTable'
 import { ErrorNotice } from '@/components/admin/ErrorNotice'
 import { buttonClass } from '@/components/admin/form'
+import { setCarVisibilityAction } from './actions'
 import { safeLoad } from '@/lib/api/safe'
 import type { Car } from '@/lib/types'
 
@@ -14,10 +15,23 @@ export default async function CarsPage({ searchParams }: { searchParams: Promise
   const { data, meta } = result.data
 
   const columns: Column<Car>[] = [
-    { header: 'Name', render: (c) => <span className="font-semibold">{c.name}</span> },
+    {
+      header: 'Name',
+      render: (c) => <span className={`font-semibold ${c.is_visible === false ? 'opacity-50' : ''}`}>{c.name}</span>,
+    },
     { header: 'Type', render: (c) => c.type ?? '—' },
     { header: 'Seats', render: (c) => c.seats ?? '—' },
     { header: 'Price/day', align: 'right', render: (c) => (c.price_per_day_usd != null ? `$${c.price_per_day_usd}` : '—') },
+    {
+      header: 'Visible',
+      render: (c) => (
+        <form action={setCarVisibilityAction.bind(null, c.id, !(c.is_visible !== false))}>
+          <button type="submit" className="text-xs font-semibold text-body hover:underline">
+            {c.is_visible !== false ? 'Visible' : 'Hidden'}
+          </button>
+        </form>
+      ),
+    },
     { header: 'Last edited by', render: (c) => c.lastEditedBy ?? '—' },
     {
       header: '',

@@ -20,6 +20,9 @@ export function CarForm({
 }) {
   const [state, formAction, pending] = useActionState(action, {})
   const [name, setName] = useState(defaultValues?.name ?? '')
+  // Missing or empty stored modes mean both are offered.
+  const storedModes = defaultValues?.rental_modes?.length ? defaultValues.rental_modes : ['with_driver', 'self_drive']
+  const [selfDrive, setSelfDrive] = useState(storedModes.includes('self_drive'))
 
   return (
     <form action={formAction} className="flex flex-col gap-4 max-w-2xl">
@@ -81,6 +84,53 @@ export function CarForm({
           className={inputClass}
         />
       </div>
+
+      <fieldset className="flex flex-col gap-2">
+        <legend className={labelClass}>Rental modes</legend>
+        <label className="flex items-center gap-2 text-[13px]">
+          <input type="checkbox" name="rental_modes" value="with_driver" defaultChecked={storedModes.includes('with_driver')} />
+          With driver
+        </label>
+        <label className="flex items-center gap-2 text-[13px]">
+          <input
+            type="checkbox"
+            name="rental_modes"
+            value="self_drive"
+            checked={selfDrive}
+            onChange={(e) => setSelfDrive(e.target.checked)}
+          />
+          Driverless
+        </label>
+      </fieldset>
+
+      {selfDrive ? (
+        <div className="grid grid-cols-2 gap-4 max-w-md">
+          <div className="flex flex-col gap-1.5">
+            <label className={labelClass} htmlFor="self_drive_from">
+              Driverless available from
+            </label>
+            <input
+              id="self_drive_from"
+              name="self_drive_from"
+              type="date"
+              defaultValue={defaultValues?.self_drive_from?.slice(0, 10) ?? ''}
+              className={inputClass}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className={labelClass} htmlFor="self_drive_to">
+              Driverless available to
+            </label>
+            <input
+              id="self_drive_to"
+              name="self_drive_to"
+              type="date"
+              defaultValue={defaultValues?.self_drive_to?.slice(0, 10) ?? ''}
+              className={inputClass}
+            />
+          </div>
+        </div>
+      ) : null}
 
       <ImageUploadField name="cover_image_url" label="Cover image" defaultValue={defaultValues?.cover_image?.url} />
 

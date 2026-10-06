@@ -1,14 +1,18 @@
 import { apiGet } from '@/lib/api/client'
+import { requireToken } from '@/lib/auth/session'
 import type { Car } from '@/lib/types'
 
+// The admin endpoints also return hidden cars (the public ones do not).
 // The Go backend serializes an empty result set as `null`, not `[]`.
 export async function listCars(page: number, limit = 10) {
-  const res = await apiGet<Car[] | null>('/cars', { page, limit })
+  const token = await requireToken()
+  const res = await apiGet<Car[] | null>('/admin/cars', { page, limit }, token)
   return { ...res, data: res.data ?? [] }
 }
 
-export function getCarBySlug(slug: string) {
-  return apiGet<Car>(`/cars/${slug}`)
+export async function getCarBySlug(slug: string) {
+  const token = await requireToken()
+  return apiGet<Car>(`/admin/cars/${slug}`, undefined, token)
 }
 
 // Rentals only store a car_id reference — same limitation as destinations,

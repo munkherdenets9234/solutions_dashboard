@@ -105,6 +105,13 @@ export interface Car {
   price_per_day_usd?: number
   tags?: string[]
   cover_image?: Image
+  // Missing means visible; only an explicit false hides the car.
+  is_visible?: boolean
+  // Missing or empty means both modes are offered.
+  rental_modes?: ('with_driver' | 'self_drive')[]
+  // Date-only strings (YYYY-MM-DD); set together, only when self_drive is offered.
+  self_drive_from?: string | null
+  self_drive_to?: string | null
   // The tenant_users._id of whoever last created/updated this record via the
   // admin panel. Absent if never touched by an authenticated tenant user.
   lastEditedBy?: string
