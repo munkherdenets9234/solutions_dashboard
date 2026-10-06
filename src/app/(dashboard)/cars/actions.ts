@@ -11,6 +11,12 @@ export interface FormState {
   error?: string
 }
 
+// Sent as-is for the backend to validate; empty means no value.
+function dateOrNull(value: FormDataEntryValue | null) {
+  const s = String(value ?? '').trim()
+  return s || null
+}
+
 function bodyFromForm(formData: FormData) {
   const coverImageUrl = String(formData.get('cover_image_url') ?? '').trim()
   const tags = String(formData.get('tags') ?? '')
@@ -25,6 +31,9 @@ function bodyFromForm(formData: FormData) {
     seats: Number(formData.get('seats') ?? 0) || undefined,
     price_per_day_usd: Number(formData.get('price_per_day_usd') ?? 0) || undefined,
     tags,
+    rental_modes: formData.getAll('rental_modes').map(String),
+    self_drive_from: dateOrNull(formData.get('self_drive_from')),
+    self_drive_to: dateOrNull(formData.get('self_drive_to')),
     cover_image: coverImageUrl ? { url: coverImageUrl } : undefined,
   }
 }
@@ -63,4 +72,10 @@ export async function deleteCarAction(id: string) {
   await apiDelete(`/admin/cars/${id}`, token)
   revalidatePath('/cars')
   redirect('/cars')
+}
+
+export async function setCarVisibilityAction(id: string, visible: boolean): Promise<void> {
+  const token = await requireToken()
+  await apiPut<Car>(`/admin/cars/${id}`, { is_visible: visible }, token)
+  revalidatePath('/cars')
 }
