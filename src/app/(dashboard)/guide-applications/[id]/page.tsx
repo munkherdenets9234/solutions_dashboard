@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireToken } from '@/lib/auth/session'
 import { getGuideApplication } from '@/lib/data/guide-applications'
@@ -58,6 +59,9 @@ export default async function GuideApplicationDetailPage({ params }: { params: P
 
   return (
     <div className="flex flex-col gap-5 max-w-3xl">
+      <Link href="/guide-applications" className="w-fit text-[13px] font-semibold text-muted hover:underline">
+        &larr; Back to applications
+      </Link>
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-[26px] font-extrabold tracking-tight">{p.full_name}</h1>
