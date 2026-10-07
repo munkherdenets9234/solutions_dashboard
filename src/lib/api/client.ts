@@ -82,3 +82,9 @@ export function apiPatch<T>(path: string, body: unknown, token?: string) {
 export function apiDelete<T>(path: string, token?: string) {
   return request<T>(path, { method: 'DELETE' }, token)
 }
+
+// Multipart POST. Content-Type is deliberately NOT set: fetch derives it from
+// the FormData body, including the multipart boundary.
+export function apiPostForm<T>(path: string, form: FormData, token?: string) {
+  return request<T>(path, { method: 'POST', body: form }, token)
+}
