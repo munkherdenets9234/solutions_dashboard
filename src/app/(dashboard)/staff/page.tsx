@@ -4,6 +4,7 @@ import { DataTable, type Column } from '@/components/admin/DataTable'
 import { StatusBadge } from '@/components/admin/StatusBadge'
 import { StatusActions } from '@/components/admin/StatusActions'
 import { ResetPasswordButton } from '@/components/admin/ResetPasswordButton'
+import { ReceiveEmailsToggle } from '@/components/admin/ReceiveEmailsToggle'
 import { CreateStaffForm } from '@/components/admin/CreateStaffForm'
 import { ErrorNotice } from '@/components/admin/ErrorNotice'
 import { safeLoad } from '@/lib/api/safe'
@@ -26,6 +27,10 @@ export default async function StaffPage({ searchParams }: { searchParams: Promis
     { header: 'Email', render: (u) => u.email },
     { header: 'Role', render: (u) => <StatusBadge status={u.role} /> },
     { header: 'Status', render: (u) => <StatusBadge status={u.status} /> },
+    {
+      header: 'Request emails',
+      render: (u) => <ReceiveEmailsToggle id={u.id} name={u.name} initial={u.receive_emails === true} />,
+    },
     {
       header: '',
       render: (u) => (

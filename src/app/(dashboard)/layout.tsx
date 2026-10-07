@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth/session'
+import { tokenRole } from '@/lib/token-role.mjs'
 import { Sidebar } from '@/components/admin/Sidebar'
 import { Topbar } from '@/components/admin/Topbar'
 
@@ -9,7 +10,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   return (
     <div className="flex min-h-screen">
-      <Sidebar email={session.email} />
+      <Sidebar email={session.email} isAdmin={tokenRole(session.token) === 'admin'} />
       <div className="flex-1 min-w-0 flex flex-col">
         <Topbar email={session.email} />
         <div className="flex-1 overflow-auto px-7 py-6">{children}</div>

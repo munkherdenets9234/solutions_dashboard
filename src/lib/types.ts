@@ -231,6 +231,7 @@ export interface TenantUser {
   email: string
   role: 'admin' | 'staff'
   status: string
+  receive_emails?: boolean
 }
 
 interface CustomerBase {

@@ -10,7 +10,7 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-export function Sidebar({ email }: { email: string }) {
+export function Sidebar({ email, isAdmin }: { email: string; isAdmin: boolean }) {
   const pathname = usePathname()
 
   return (
@@ -30,7 +30,7 @@ export function Sidebar({ email }: { email: string }) {
               {section.heading}
             </div>
             <div className="flex flex-col gap-px">
-              {section.items.map((item) => {
+              {section.items.filter((item) => isAdmin || !item.adminOnly).map((item) => {
                 const active = isActive(pathname, item.href)
                 return (
                   <Link

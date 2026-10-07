@@ -23,7 +23,8 @@ export async function createStaffAction(_prevState: FormState, formData: FormDat
   if (!name || !email) return { error: 'Name and email are required.' }
 
   try {
-    await apiPost<TenantUser>('/admin/users', { name, email, role }, token)
+    const receive_emails = formData.get('receive_emails') === 'on'
+    await apiPost<TenantUser>('/admin/users', { name, email, role, receive_emails }, token)
   } catch (err) {
     return { error: err instanceof ApiError ? err.message : 'Failed to create user.' }
   }
@@ -36,6 +37,17 @@ export async function updateStaffStatusAction(id: string, status: string) {
   const token = await requireToken()
   await apiPut(`/admin/users/${id}/status`, { status }, token)
   revalidatePath('/staff')
+}
+
+export async function setReceiveEmailsAction(id: string, receiveEmails: boolean): Promise<{ error?: string }> {
+  const token = await requireToken()
+  try {
+    await apiPut(`/admin/users/${encodeURIComponent(id)}`, { receive_emails: receiveEmails }, token)
+  } catch (err) {
+    return { error: err instanceof ApiError ? err.message : 'Failed to update.' }
+  }
+  revalidatePath('/staff')
+  return {}
 }
 
 export async function resetStaffPasswordAction(id: string): Promise<ResetPasswordState> {
