@@ -29,12 +29,16 @@ export async function guideCounts(token: string): Promise<GuideCounts> {
   return res.data ?? { new: 0, reviewing: 0, shortlisted: 0, rejected: 0, hired: 0 }
 }
 
-export async function guideFileLink(token: string, id: string, fileId: string) {
+export type GuideFileDisposition = 'inline' | 'attachment'
+
+// `inline` is for in-page preview (jpeg/png only; the backend answers 400 for
+// anything else), `attachment` forces a download.
+export async function guideFileLink(token: string, id: string, fileId: string, disposition: GuideFileDisposition) {
   const safeId = assertGuideId(id)
   const safeFileId = assertGuideId(fileId)
   const res = await apiGet<GuideFileLink>(
     `/admin/guide-applications/${safeId}/files/${safeFileId}`,
-    undefined,
+    { disposition },
     token
   )
   return res.data

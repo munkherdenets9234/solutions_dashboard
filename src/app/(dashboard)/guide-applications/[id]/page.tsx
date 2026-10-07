@@ -170,6 +170,8 @@ export default async function GuideApplicationDetailPage({ params }: { params: P
                 label={guideLabel('fileKind', f.kind)}
                 name={f.original_name}
                 size={fileSize(f.size)}
+                mime={f.mime}
+                primary={f.kind === 'cv'}
               />
             ))}
           </div>
