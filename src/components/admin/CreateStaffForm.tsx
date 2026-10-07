@@ -30,6 +30,10 @@ export function CreateStaffForm() {
           <option value="admin">Admin</option>
         </select>
       </div>
+      <label className="flex h-9 items-center gap-2 text-xs font-semibold text-body" htmlFor="receive_emails">
+        <input id="receive_emails" name="receive_emails" type="checkbox" className="h-4 w-4" />
+        Receives request emails
+      </label>
       <button type="submit" disabled={pending} className={buttonClass}>
         {pending ? 'Adding…' : '+ Add user'}
       </button>
