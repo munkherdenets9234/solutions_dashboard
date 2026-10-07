@@ -1,6 +1,8 @@
 export interface NavItem {
   href: string
   label: string
+  // Hidden from non-admin roles (display only; the backend enforces the role).
+  adminOnly?: boolean
 }
 
 export interface NavSection {
@@ -34,6 +36,7 @@ export const NAV_SECTIONS: NavSection[] = [
     heading: 'System',
     items: [
       { href: '/staff', label: 'Staff' },
+      { href: '/mail-log', label: 'Mail log', adminOnly: true },
       { href: '/settings', label: 'Settings' },
       { href: '/translations', label: 'Translations' },
       { href: '/help', label: 'Help' },
