@@ -1,4 +1,5 @@
 import { apiGet, ApiError } from '@/lib/api/client'
+import { requireToken } from '@/lib/auth/session'
 import { listCustomers } from '@/lib/data/customers'
 import { listDestinations } from '@/lib/data/destinations'
 import { listPartners } from '@/lib/data/partners'
@@ -9,12 +10,14 @@ import { localeText, type Review } from '@/lib/types'
 // `data: null` (not []) when there are no reviews yet — coalesce so list
 // pages can render an empty table. Supports filtering by related tour or partner.
 export async function listReviews(page: number, limit = 10, filters?: { tour?: string; partner?: string }) {
-  const res = await apiGet<Review[] | null>('/admin/reviews', { page, limit, tour: filters?.tour, partner: filters?.partner })
+  const token = await requireToken()
+  const res = await apiGet<Review[] | null>('/admin/reviews', { page, limit, tour: filters?.tour, partner: filters?.partner }, token)
   return { ...res, data: res.data ?? [] }
 }
 
-export function getReviewById(id: string) {
-  return apiGet<Review>(`/admin/reviews/${id}`)
+export async function getReviewById(id: string) {
+  const token = await requireToken()
+  return apiGet<Review>(`/admin/reviews/${id}`, undefined, token)
 }
 
 export interface RefOption {
