@@ -1,4 +1,5 @@
 import { apiGet, ApiError } from '@/lib/api/client'
+import { requireToken } from '@/lib/auth/session'
 import type { Destination } from '@/lib/types'
 
 // Admin list/detail — full locale maps, active and inactive alike, unlike
@@ -6,12 +7,14 @@ import type { Destination } from '@/lib/types'
 // language via ?lang= and only returns active records).
 // The Go backend serializes an empty result set as `null`, not `[]`.
 export async function listDestinations(page: number, limit = 10) {
-  const res = await apiGet<Destination[] | null>('/admin/destinations', { page, limit })
+  const token = await requireToken()
+  const res = await apiGet<Destination[] | null>('/admin/destinations', { page, limit }, token)
   return { ...res, data: res.data ?? [] }
 }
 
-export function getDestinationById(id: string) {
-  return apiGet<Destination>(`/admin/destinations/${id}`)
+export async function getDestinationById(id: string) {
+  const token = await requireToken()
+  return apiGet<Destination>(`/admin/destinations/${id}`, undefined, token)
 }
 
 // The edit page is slug-routed; resolve slug -> record by scanning the admin
